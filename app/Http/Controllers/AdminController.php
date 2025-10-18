@@ -172,6 +172,35 @@ class AdminController extends Controller
         return redirect()->route('admin.shifts.index')->with('success', 'Shift deleted successfully.');
     }
 
+    public function assignEmployeeToShift(Request $request, Shift $shift)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:users,id',
+            'shift_date' => 'required|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        // Check if employee is already assigned to this shift on the same date
+        $existingAssignment = EmployeeShift::where('employee_id', $request->employee_id)
+            ->where('shift_id', $shift->id)
+            ->where('shift_date', $request->shift_date)
+            ->first();
+
+        if ($existingAssignment) {
+            return redirect()->back()->with('error', 'Employee is already assigned to this shift on the selected date.');
+        }
+
+        EmployeeShift::create([
+            'employee_id' => $request->employee_id,
+            'shift_id' => $shift->id,
+            'shift_date' => $request->shift_date,
+            'status' => 'assigned',
+            'notes' => $request->notes,
+        ]);
+
+        return redirect()->back()->with('success', 'Employee assigned to shift successfully.');
+    }
+
     // Attendance CRUD
     public function attendance()
     {

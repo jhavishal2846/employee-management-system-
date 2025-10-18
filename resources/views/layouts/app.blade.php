@@ -85,9 +85,13 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s;
+            padding: 1.5rem;
         }
         .dashboard-card:hover {
             transform: translateY(-5px);
+        }
+        .dashboard-card .card-body {
+            padding: 0;
         }
         .btn-primary {
             background-color: #28a745;
@@ -101,11 +105,17 @@
             background-color: white;
             border-radius: 10px;
             overflow: hidden;
+            margin-bottom: 0;
         }
         .table thead th {
             background-color: #343a40;
             color: white;
             border: none;
+            padding: 1rem;
+        }
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
         }
         .table tbody tr:hover {
             background-color: #f1f3f4;
@@ -114,13 +124,15 @@
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border-radius: 10px;
+            padding: 1.5rem;
         }
         .stats-card .card-body {
             text-align: center;
+            padding: 0;
         }
         .stats-card h3 {
             font-size: 2rem;
-            margin-bottom: 0;
+            margin-bottom: 0.5rem;
         }
         .stats-card p {
             margin-bottom: 0;
@@ -245,7 +257,7 @@
 
         <!-- Main Content -->
         <main class="main-content" id="mainContent">
-            <div class="container-fluid py-4">
+            <div class="container-fluid py-4 px-4">
                 @yield('content')
             </div>
         </main>

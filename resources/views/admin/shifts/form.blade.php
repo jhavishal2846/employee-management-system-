@@ -53,7 +53,7 @@
                             <div class="mb-3">
                                 <label for="start_time" class="form-label">Start Time <span class="text-danger">*</span></label>
                                 <input type="time" class="form-control @error('start_time') is-invalid @enderror"
-                                       id="start_time" name="start_time" value="{{ old('start_time', $shift->start_time ?? '') }}" required>
+                                       id="start_time" name="start_time" value="{{ old('start_time', isset($shift) ? $shift->start_time : '') }}" required>
                                 @error('start_time')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -64,7 +64,7 @@
                             <div class="mb-3">
                                 <label for="end_time" class="form-label">End Time <span class="text-danger">*</span></label>
                                 <input type="time" class="form-control @error('end_time') is-invalid @enderror"
-                                       id="end_time" name="end_time" value="{{ old('end_time', $shift->end_time ?? '') }}" required>
+                                       id="end_time" name="end_time" value="{{ old('end_time', isset($shift) ? $shift->end_time : '') }}" required>
                                 @error('end_time')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

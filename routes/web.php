@@ -45,6 +45,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/shifts/{shift}/edit', [AdminController::class, 'editShift'])->name('admin.shifts.edit');
     Route::put('/admin/shifts/{shift}', [AdminController::class, 'updateShift'])->name('admin.shifts.update');
     Route::delete('/admin/shifts/{shift}', [AdminController::class, 'destroyShift'])->name('admin.shifts.destroy');
+    Route::post('/admin/shifts/{shift}/assign', [AdminController::class, 'assignEmployeeToShift'])->name('admin.shifts.assign');
 
     // Attendance CRUD
     Route::get('/admin/attendance', [AdminController::class, 'attendance'])->name('admin.attendance.index');

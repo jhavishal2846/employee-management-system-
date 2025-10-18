@@ -6,6 +6,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-clock text-success"></i> Shift Details</h2>
             <div>
+                <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#assignEmployeeModal">
+                    <i class="fas fa-user-plus"></i> Assign Employee
+                </button>
                 <a href="{{ route('admin.shifts.edit', $shift) }}" class="btn btn-warning me-2">
                     <i class="fas fa-edit"></i> Edit Shift
                 </a>
@@ -60,7 +63,7 @@
                                     <div><strong>Name:</strong> {{ $assignment->employee->name }}</div>
                                     <div><strong>Email:</strong> {{ $assignment->employee->email }}</div>
                                     <div><strong>Status:</strong>
-                                        <span class="badge bg-{{ $assignment->status === 'assigned' ? 'success' : 'warning' }}">
+                                        <span class="badge bg-{{ $assignment->status === 'assigned' ? 'success' : ($assignment->status === 'pending' ? 'warning' : 'danger') }}">
                                             {{ ucfirst($assignment->status) }}
                                         </span>
                                     </div>
@@ -103,6 +106,59 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Employee Modal -->
+<div class="modal fade" id="assignEmployeeModal" tabindex="-1" aria-labelledby="assignEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignEmployeeModalLabel">Assign Employee to Shift</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.shifts.assign', $shift) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Select Employee <span class="text-danger">*</span></label>
+                        <select class="form-control @error('employee_id') is-invalid @enderror" id="employee_id" name="employee_id" required>
+                            <option value="">Choose an employee...</option>
+                            @php
+                                $assignedEmployeeIds = $shift->employeeShifts->pluck('employee_id')->toArray();
+                                $availableEmployees = \App\Models\User::employees()->active()->whereNotIn('id', $assignedEmployeeIds)->get();
+                            @endphp
+                            @foreach($availableEmployees as $employee)
+                                <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->email }})</option>
+                            @endforeach
+                        </select>
+                        @error('employee_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="shift_date" class="form-label">Shift Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control @error('shift_date') is-invalid @enderror"
+                               id="shift_date" name="shift_date" value="{{ old('shift_date', date('Y-m-d')) }}" required>
+                        @error('shift_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control @error('notes') is-invalid @enderror"
+                                  id="notes" name="notes" rows="3" placeholder="Optional notes about this assignment">{{ old('notes') }}</textarea>
+                        @error('notes')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign Employee</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
