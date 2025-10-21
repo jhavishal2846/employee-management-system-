@@ -77,6 +77,16 @@ class AttendanceLog extends Model
         return $this->hasOne(BreakLog::class)->whereNull('break_end');
     }
 
+    public function scopePaginateAttendance($query, $perPage = 15)
+    {
+        return $query->with(['employee', 'shift'])->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForEmployee($query, $employeeId, $perPage = 15)
+    {
+        return $query->forEmployee($employeeId)->latest()->paginate($perPage);
+    }
+
     protected static function boot()
     {
         parent::boot();

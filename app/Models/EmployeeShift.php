@@ -47,4 +47,14 @@ class EmployeeShift extends Model
     {
         return $query->where('shift_date', $date);
     }
+
+    public function scopePaginateEmployeeShifts($query, $perPage = 15)
+    {
+        return $query->with(['employee', 'shift'])->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForEmployee($query, $employeeId, $perPage = 15)
+    {
+        return $query->where('employee_id', $employeeId)->with('shift')->latest()->paginate($perPage);
+    }
 }

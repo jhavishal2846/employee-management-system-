@@ -132,4 +132,14 @@ class User extends Authenticatable
     {
         return $query->where('role', 'employee');
     }
+
+    public function scopePaginateEmployees($query, $perPage = 15)
+    {
+        return $query->employees()->active()->paginate($perPage);
+    }
+
+    public function scopePaginateAdmins($query, $perPage = 15)
+    {
+        return $query->admins()->paginate($perPage);
+    }
 }

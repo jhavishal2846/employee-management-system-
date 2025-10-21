@@ -33,6 +33,18 @@ class BreakLog extends Model
         return $query->whereNull('break_end');
     }
 
+    public function scopePaginateBreaks($query, $perPage = 15)
+    {
+        return $query->with(['attendanceLog.employee'])->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForEmployee($query, $employeeId, $perPage = 15)
+    {
+        return $query->whereHas('attendanceLog', function ($q) use ($employeeId) {
+            $q->where('employee_id', $employeeId);
+        })->with('attendanceLog')->latest()->paginate($perPage);
+    }
+
     public function scopeForDate($query, $date)
     {
         return $query->whereDate('break_start', $date);

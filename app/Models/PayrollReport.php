@@ -80,4 +80,14 @@ class PayrollReport extends Model
     {
         return $query->where('payment_status', 'paid');
     }
+
+    public function scopePaginateReports($query, $perPage = 15)
+    {
+        return $query->with(['employee', 'generator'])->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForEmployee($query, $employeeId, $perPage = 15)
+    {
+        return $query->where('employee_id', $employeeId)->with('generator')->latest()->paginate($perPage);
+    }
 }

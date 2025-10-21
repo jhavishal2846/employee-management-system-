@@ -50,4 +50,14 @@ class AuditLog extends Model
         }
         return $query;
     }
+
+    public function scopePaginateLogs($query, $perPage = 15)
+    {
+        return $query->with('user')->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForUser($query, $userId, $perPage = 15)
+    {
+        return $query->where('user_id', $userId)->latest()->paginate($perPage);
+    }
 }

@@ -56,4 +56,14 @@ class ShiftRequest extends Model
     {
         return $query->where('status', 'rejected');
     }
+
+    public function scopePaginateRequests($query, $perPage = 15)
+    {
+        return $query->with(['employee', 'shift', 'approver'])->latest()->paginate($perPage);
+    }
+
+    public function scopePaginateForEmployee($query, $employeeId, $perPage = 15)
+    {
+        return $query->where('employee_id', $employeeId)->with(['shift', 'approver'])->latest()->paginate($perPage);
+    }
 }

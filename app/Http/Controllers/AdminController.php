@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Shift;
 use App\Models\EmployeeShift;
 use App\Models\AttendanceLog;
+use App\Models\PayrollReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -303,20 +304,207 @@ class AdminController extends Controller
         return redirect()->route('admin.attendance.index')->with('success', 'Attendance record deleted successfully.');
     }
 
-    public function reports()
+    public function reports(Request $request)
     {
-        // Basic reports data
+        $reportType = $request->get('type', 'attendance');
+        $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
+        $employeeId = $request->get('employee_id');
+
+        $data = [];
+
+        switch ($reportType) {
+            case 'attendance':
+                $data = $this->getAttendanceReport($startDate, $endDate, $employeeId);
+                break;
+            case 'payroll':
+                $data = $this->getPayrollReport($startDate, $endDate, $employeeId);
+                break;
+            case 'shifts':
+                $data = $this->getShiftReport($startDate, $endDate, $employeeId);
+                break;
+            case 'performance':
+                $data = $this->getPerformanceReport($startDate, $endDate, $employeeId);
+                break;
+            default:
+                $data = $this->getAttendanceReport($startDate, $endDate, $employeeId);
+        }
+
+        $employees = User::employees()->active()->get();
+
+        return view('admin.reports.index', array_merge($data, [
+            'reportType' => $reportType,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'employeeId' => $employeeId,
+            'employees' => $employees,
+        ]));
+    }
+
+    private function getAttendanceReport($startDate, $endDate, $employeeId = null)
+    {
+        $query = AttendanceLog::whereBetween('attendance_date', [$startDate, $endDate]);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        $attendanceLogs = $query->with(['employee', 'shift'])->get();
+
+        // Monthly attendance data for chart
         $monthlyAttendance = AttendanceLog::selectRaw('MONTH(attendance_date) as month, COUNT(*) as count')
-            ->whereYear('attendance_date', date('Y'))
+            ->whereBetween('attendance_date', [$startDate, $endDate])
+            ->when($employeeId, fn($q) => $q->where('employee_id', $employeeId))
             ->groupBy('month')
-            ->get();
+            ->get()
+            ->pluck('count', 'month')
+            ->toArray();
 
-        $shiftDistribution = EmployeeShift::selectRaw('shift_id, COUNT(*) as count')
-            ->with('shift')
-            ->groupBy('shift_id')
-            ->get();
+        // Status distribution
+        $statusDistribution = $attendanceLogs->groupBy('status')->map->count();
 
-        return view('admin.reports.index', compact('monthlyAttendance', 'shiftDistribution'));
+        // Employee attendance summary
+        $employeeSummary = $attendanceLogs->groupBy('employee_id')->map(function ($logs, $empId) {
+            $employee = $logs->first()->employee;
+            return [
+                'employee' => $employee,
+                'total_days' => $logs->count(),
+                'present_days' => $logs->where('status', 'present')->count(),
+                'absent_days' => $logs->where('status', 'absent')->count(),
+                'late_days' => $logs->where('status', 'late')->count(),
+                'total_hours' => $logs->sum('total_hours'),
+                'attendance_rate' => $logs->count() > 0 ? round(($logs->where('status', 'present')->count() / $logs->count()) * 100, 1) : 0,
+            ];
+        });
+
+        return [
+            'attendanceLogs' => $attendanceLogs,
+            'monthlyAttendance' => $monthlyAttendance,
+            'statusDistribution' => $statusDistribution,
+            'employeeSummary' => $employeeSummary,
+        ];
+    }
+
+    private function getPayrollReport($startDate, $endDate, $employeeId = null)
+    {
+        $query = PayrollReport::whereBetween('period_start', [$startDate, $endDate])
+            ->orWhereBetween('period_end', [$startDate, $endDate]);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        $payrollReports = $query->with(['employee', 'generator'])->get();
+
+        // Payroll summary
+        $payrollSummary = [
+            'total_reports' => $payrollReports->count(),
+            'total_payroll' => $payrollReports->sum('total_pay'),
+            'average_payroll' => $payrollReports->avg('total_pay'),
+            'paid_reports' => $payrollReports->where('payment_status', 'paid')->count(),
+            'pending_reports' => $payrollReports->where('payment_status', 'pending')->count(),
+        ];
+
+        // Monthly payroll data for chart
+        $monthlyPayroll = $payrollReports->groupBy(function ($report) {
+            return $report->period_start->format('M Y');
+        })->map->sum('total_pay');
+
+        return [
+            'payrollReports' => $payrollReports,
+            'payrollSummary' => $payrollSummary,
+            'monthlyPayroll' => $monthlyPayroll,
+        ];
+    }
+
+    private function getShiftReport($startDate, $endDate, $employeeId = null)
+    {
+        $query = EmployeeShift::whereBetween('shift_date', [$startDate, $endDate]);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        $employeeShifts = $query->with(['employee', 'shift'])->get();
+
+        // Shift distribution
+        $shiftDistribution = $employeeShifts->groupBy('shift.shift_name')->map->count();
+
+        // Status distribution
+        $shiftStatusDistribution = $employeeShifts->groupBy('status')->map->count();
+
+        // Employee shift summary
+        $employeeShiftSummary = $employeeShifts->groupBy('employee_id')->map(function ($shifts, $empId) {
+            $employee = $shifts->first()->employee;
+            return [
+                'employee' => $employee,
+                'total_shifts' => $shifts->count(),
+                'accepted_shifts' => $shifts->where('status', 'accepted')->count(),
+                'rejected_shifts' => $shifts->where('status', 'rejected')->count(),
+                'pending_shifts' => $shifts->where('status', 'pending')->count(),
+            ];
+        });
+
+        return [
+            'employeeShifts' => $employeeShifts,
+            'shiftDistribution' => $shiftDistribution,
+            'shiftStatusDistribution' => $shiftStatusDistribution,
+            'employeeShiftSummary' => $employeeShiftSummary,
+        ];
+    }
+
+    private function getPerformanceReport($startDate, $endDate, $employeeId = null)
+    {
+        $query = AttendanceLog::whereBetween('attendance_date', [$startDate, $endDate]);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        $attendanceLogs = $query->with(['employee', 'shift'])->get();
+
+        // Performance metrics
+        $performanceMetrics = $attendanceLogs->groupBy('employee_id')->map(function ($logs, $empId) {
+            $employee = $logs->first()->employee;
+            $totalDays = $logs->count();
+            $presentDays = $logs->where('status', 'present')->count();
+            $lateDays = $logs->where('status', 'late')->count();
+            $absentDays = $logs->where('status', 'absent')->count();
+            $totalHours = $logs->sum('total_hours');
+            $overtimeHours = $logs->sum('overtime_hours');
+
+            return [
+                'employee' => $employee,
+                'attendance_rate' => $totalDays > 0 ? round(($presentDays / $totalDays) * 100, 1) : 0,
+                'punctuality_rate' => $totalDays > 0 ? round((($presentDays - $lateDays) / $totalDays) * 100, 1) : 0,
+                'total_hours' => $totalHours,
+                'average_hours_per_day' => $totalDays > 0 ? round($totalHours / $totalDays, 2) : 0,
+                'overtime_hours' => $overtimeHours,
+                'absent_days' => $absentDays,
+                'late_days' => $lateDays,
+            ];
+        });
+
+        // Top performers
+        $topPerformers = $performanceMetrics->sortByDesc('attendance_rate')->take(10);
+
+        // Department performance
+        $departmentPerformance = $performanceMetrics->groupBy(function ($metric) {
+            return $metric['employee']->department ?? 'No Department';
+        })->map(function ($metrics) {
+            return [
+                'total_employees' => $metrics->count(),
+                'average_attendance_rate' => round($metrics->avg('attendance_rate'), 1),
+                'average_punctuality_rate' => round($metrics->avg('punctuality_rate'), 1),
+                'total_hours' => $metrics->sum('total_hours'),
+            ];
+        });
+
+        return [
+            'performanceMetrics' => $performanceMetrics,
+            'topPerformers' => $topPerformers,
+            'departmentPerformance' => $departmentPerformance,
+        ];
     }
 
     public function settings()

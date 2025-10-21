@@ -437,7 +437,7 @@
                         </ul>
                     </div>
 
-                    <div class="menu-group">
+                    {{-- <div class="menu-group">
                         <h2 class="menu-group-title">Others</h2>
                         <ul class="menu-items">
                             <li class="menu-item">
@@ -446,14 +446,14 @@
                                     <span class="menu-text">Reports</span>
                                 </a>
                             </li>
-                            {{-- <li class="menu-item">
+                            <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
                                     <span class="menu-icon"><i class="fas fa-cog"></i></span>
                                     <span class="menu-text">Settings</span>
                                 </a>
-                            </li> --}}
+                            </li>
                         </ul>
-                    </div>
+                    </div> --}}
                 @else
                     <!-- Employee Menu -->
                     <div class="menu-group">
