@@ -368,8 +368,18 @@
 </style>
 
 <div class="page-header">
-    <h1>Admin Dashboard 👨‍💼</h1>
-    <p>Welcome back! Here's your office management overview.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Admin Dashboard 👨‍💼</h1>
+            <p>Welcome back! Here's your office management overview.</p>
+        </div>
+        <div>
+            <a href="{{ route('admin.dashboard.export') }}" class="btn btn-primary" style="background: var(--primary); border: none; padding: 0.75rem 1.5rem; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;">
+                <i class="fas fa-download"></i>
+                Export CSV
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Statistics Cards -->

@@ -49,6 +49,106 @@ class AdminController extends Controller
         ));
     }
 
+    public function exportDashboard()
+    {
+        $filename = 'dashboard_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        return response()->streamDownload(function () {
+            $handle = fopen('php://output', 'w');
+
+            // Write CSV headers
+            fputcsv($handle, ['Dashboard Export - ' . now()->format('Y-m-d H:i:s')]);
+            fputcsv($handle, []); // Empty row for spacing
+
+            // Statistics Section
+            fputcsv($handle, ['STATISTICS']);
+            fputcsv($handle, ['Metric', 'Value']);
+
+            $totalEmployees = User::employees()->active()->count();
+            $totalShifts = Shift::active()->count();
+            $pendingShiftRequests = EmployeeShift::whereIn('status', ['pending', 'assigned'])->count();
+            $todayAttendance = AttendanceLog::where('attendance_date', today())->count();
+
+            fputcsv($handle, ['Total Employees', $totalEmployees]);
+            fputcsv($handle, ['Active Shifts', $totalShifts]);
+            fputcsv($handle, ['Pending Requests', $pendingShiftRequests]);
+            fputcsv($handle, ['Today\'s Attendance', $todayAttendance]);
+
+            fputcsv($handle, []); // Empty row
+
+            // Recent Attendance Section
+            fputcsv($handle, ['RECENT ATTENDANCE']);
+            fputcsv($handle, ['Employee Name', 'Email', 'Status', 'Date', 'Login Time', 'Logout Time', 'Total Hours']);
+
+            $recentAttendance = AttendanceLog::with(['employee', 'shift'])
+                ->latest()
+                ->take(10)
+                ->get();
+
+            foreach ($recentAttendance as $attendance) {
+                fputcsv($handle, [
+                    $attendance->employee->name,
+                    $attendance->employee->email,
+                    ucfirst($attendance->status),
+                    $attendance->attendance_date->format('Y-m-d'),
+                    $attendance->login_time ?? '',
+                    $attendance->logout_time ?? '',
+                    $attendance->total_hours ?? ''
+                ]);
+            }
+
+            fputcsv($handle, []); // Empty row
+
+            // Assigned Shifts Section
+            fputcsv($handle, ['ASSIGNED SHIFTS']);
+            fputcsv($handle, ['Employee Name', 'Email', 'Shift Name', 'Shift Date', 'Status']);
+
+            $assignedShifts = EmployeeShift::with(['employee', 'shift'])
+                ->where('status', 'assigned')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            foreach ($assignedShifts as $shift) {
+                fputcsv($handle, [
+                    $shift->employee->name,
+                    $shift->employee->email,
+                    $shift->shift->shift_name,
+                    $shift->shift_date->format('Y-m-d'),
+                    ucfirst($shift->status)
+                ]);
+            }
+
+            fputcsv($handle, []); // Empty row
+
+            // Rejected Shifts Section
+            fputcsv($handle, ['REJECTED SHIFTS']);
+            fputcsv($handle, ['Employee Name', 'Email', 'Shift Name', 'Shift Date', 'Status', 'Rejection Reason']);
+
+            $rejectedShifts = EmployeeShift::with(['employee', 'shift'])
+                ->where('status', 'rejected')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            foreach ($rejectedShifts as $shift) {
+                fputcsv($handle, [
+                    $shift->employee->name,
+                    $shift->employee->email,
+                    $shift->shift->shift_name,
+                    $shift->shift_date->format('Y-m-d'),
+                    ucfirst($shift->status),
+                    $shift->rejection_reason ?? ''
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     // Employees CRUD
     public function employees()
     {

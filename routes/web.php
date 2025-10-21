@@ -25,6 +25,7 @@ Route::get('/home', function () {
 // Admin Routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/dashboard/export', [AdminController::class, 'exportDashboard'])->name('admin.dashboard.export');
 
     // Employees CRUD
     Route::get('/admin/employees', [AdminController::class, 'employees'])->name('admin.employees.index');
