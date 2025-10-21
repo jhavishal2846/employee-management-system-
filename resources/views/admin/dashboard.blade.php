@@ -415,7 +415,7 @@
 <!-- Dashboard Content -->
 <div class="row">
     <!-- Recent Attendance -->
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="dashboard-card">
             <div class="dashboard-card-header">
                 <h5>Recent Attendance</h5>
@@ -471,45 +471,92 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Pending Shift Requests -->
+<!-- Shift Status Overview -->
+<div class="row">
+    <!-- Assigned Shifts -->
     <div class="col-lg-6">
         <div class="dashboard-card">
             <div class="dashboard-card-header">
-                <h5>Pending Shift Requests</h5>
-                <span class="badge-custom badge-warning">{{ $shiftRequests->count() }} Pending</span>
+                <h5>Assigned Shifts</h5>
+                <span class="badge-custom badge-warning">{{ $assignedShifts->count() }} Assigned</span>
             </div>
             <div class="dashboard-card-body">
-                @if($shiftRequests->count() > 0)
-                    @foreach($shiftRequests as $request)
-                        <div class="request-card">
+                @if($assignedShifts->count() > 0)
+                    @foreach($assignedShifts as $shift)
+                        <div class="request-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left-color: var(--warning);">
                             <div class="request-card-header">
-                                <div class="request-card-title">{{ $request->employee->name }}</div>
+                                <div class="request-card-title">{{ $shift->employee->name }}</div>
                             </div>
                             <div class="request-card-body">
                                 <div class="request-card-detail">
                                     <i class="fas fa-briefcase"></i>
-                                    <strong>{{ $request->shift->shift_name }}</strong>
+                                    <strong>{{ $shift->shift->shift_name }}</strong>
                                 </div>
                                 <div class="request-card-detail">
                                     <i class="fas fa-calendar"></i>
-                                    <span>{{ $request->shift_date->format('M d, Y') }}</span>
+                                    <span>{{ $shift->shift_date->format('M d, Y') }}</span>
                                 </div>
                             </div>
                             <div class="request-actions">
-                                <button class="btn btn-success">
-                                    <i class="fas fa-check"></i> Approve
-                                </button>
-                                <button class="btn btn-danger">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
+                                <a href="{{ route('admin.shifts.show', $shift->shift) }}" class="btn btn-success" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
                             </div>
                         </div>
                     @endforeach
                 @else
                     <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <div class="empty-state-text">No pending shift requests</div>
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">No assigned shifts</div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected Shifts -->
+    <div class="col-lg-6">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5>Rejected Shifts</h5>
+                <span class="badge-custom badge-danger">{{ $rejectedShifts->count() }} Rejected</span>
+            </div>
+            <div class="dashboard-card-body">
+                @if($rejectedShifts->count() > 0)
+                    @foreach($rejectedShifts as $shift)
+                        <div class="request-card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left-color: var(--danger);">
+                            <div class="request-card-header">
+                                <div class="request-card-title">{{ $shift->employee->name }}</div>
+                            </div>
+                            <div class="request-card-body">
+                                <div class="request-card-detail">
+                                    <i class="fas fa-briefcase"></i>
+                                    <strong>{{ $shift->shift->shift_name }}</strong>
+                                </div>
+                                <div class="request-card-detail">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>{{ $shift->shift_date->format('M d, Y') }}</span>
+                                </div>
+                                @if($shift->rejection_reason)
+                                <div class="request-card-detail">
+                                    <i class="fas fa-comment"></i>
+                                    <span style="font-style: italic;">{{ Str::limit($shift->rejection_reason, 50) }}</span>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="request-actions">
+                                <a href="{{ route('admin.shifts.show', $shift->shift) }}" class="btn btn-danger" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div class="empty-state-text">No rejected shifts</div>
                     </div>
                 @endif
             </div>

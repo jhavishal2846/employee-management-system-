@@ -64,7 +64,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeController::class, 'dashboard'])->name('employee.dashboard');
     Route::get('/employee/shifts', [EmployeeController::class, 'shifts'])->name('employee.shifts.index');
+    Route::get('/employee/shifts/{employeeShift}', [EmployeeController::class, 'showShift'])->name('employee.shifts.show');
+    Route::post('/employee/shifts/{employeeShift}/accept', [EmployeeController::class, 'acceptShift'])->name('employee.shifts.accept');
+    Route::post('/employee/shifts/{employeeShift}/reject', [EmployeeController::class, 'rejectShift'])->name('employee.shifts.reject');
     Route::get('/employee/attendance', [EmployeeController::class, 'attendance'])->name('employee.attendance.index');
+    Route::post('/employee/attendance/clock-in', [EmployeeController::class, 'clockIn'])->name('employee.clock-in');
+    Route::post('/employee/attendance/clock-out', [EmployeeController::class, 'clockOut'])->name('employee.attendance.clock-out');
+    Route::post('/employee/attendance/start-break', [EmployeeController::class, 'startBreak'])->name('employee.attendance.start-break');
+    Route::post('/employee/attendance/end-break', [EmployeeController::class, 'endBreak'])->name('employee.attendance.end-break');
+    Route::get('/employee/attendance/status', [EmployeeController::class, 'getAttendanceStatus'])->name('employee.attendance.status');
     Route::get('/employee/requests', [EmployeeController::class, 'requests'])->name('employee.requests.index');
     Route::get('/employee/profile', [EmployeeController::class, 'profile'])->name('employee.profile.edit');
 });

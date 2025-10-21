@@ -280,6 +280,19 @@
         font-size: 1.25rem;
     }
 
+    /* Start Shift Button */
+    .start-shift-btn {
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .start-shift-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
     /* Empty State */
     .empty-state {
         text-align: center;
@@ -386,6 +399,7 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span>{{ $shift->shift->location }}</span>
                             </div>
+
                         </div>
                     @endforeach
                 @else
@@ -507,4 +521,46 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    $('.start-shift-btn').on('click', function() {
+        const shiftId = $(this).data('shift-id');
+        const button = $(this);
+
+        // Disable button to prevent multiple clicks
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Starting...');
+
+        $.ajax({
+            url: '{{ route("employee.clock-in") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    button.removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-pause"></i> On Shift');
+                    button.off('click'); // Remove click handler
+
+                    // Show success message
+                    toastr.success('Shift started successfully!');
+
+                    // Optionally refresh the page or update UI
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    button.prop('disabled', false).html('<i class="fas fa-play"></i> Start Shift');
+                    toastr.error(response.error || 'Failed to start shift');
+                }
+            },
+            error: function(xhr) {
+                button.prop('disabled', false).html('<i class="fas fa-play"></i> Start Shift');
+                const error = xhr.responseJSON?.error || 'An error occurred';
+                toastr.error(error);
+            }
+        });
+    });
+});
+</script>
 @endsection

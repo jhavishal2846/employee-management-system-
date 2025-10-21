@@ -483,12 +483,12 @@
                     <div class="menu-group">
                         <h2 class="menu-group-title">Others</h2>
                         <ul class="menu-items">
-                            <li class="menu-item">
+                            {{-- <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('employee.requests*') ? 'active' : '' }}" href="{{ route('employee.requests.index') }}">
                                     <span class="menu-icon"><i class="fas fa-exchange-alt"></i></span>
                                     <span class="menu-text">Shift Requests</span>
                                 </a>
-                            </li>
+                            </li> --}}
                             <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('employee.profile*') ? 'active' : '' }}" href="{{ route('employee.profile.edit') }}">
                                     <span class="menu-icon"><i class="fas fa-user"></i></span>

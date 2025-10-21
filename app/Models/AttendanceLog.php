@@ -66,4 +66,14 @@ class AttendanceLog extends Model
     {
         return $query->where('employee_id', $employeeId);
     }
+
+    public function breakLogs()
+    {
+        return $this->hasMany(BreakLog::class);
+    }
+
+    public function activeBreak()
+    {
+        return $this->hasOne(BreakLog::class)->whereNull('break_end');
+    }
 }

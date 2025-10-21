@@ -249,6 +249,19 @@
         transform: translateY(-1px);
     }
 
+    .btn-action-success {
+        background: white;
+        border-color: #bbf7d0;
+        color: #16a34a;
+    }
+
+    .btn-action-success:hover {
+        background: #f0fdf4;
+        border-color: #16a34a;
+        color: #15803d;
+        transform: translateY(-1px);
+    }
+
     /* Empty State */
     .empty-state {
         text-align: center;
@@ -400,21 +413,38 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge-custom badge-{{ $shift->status === 'accepted' ? 'success' : ($shift->status === 'pending' ? 'warning' : 'danger') }}">
+                            <span class="badge-custom badge-{{ $shift->status === 'accepted' ? 'success' : (in_array($shift->status, ['pending', 'assigned']) ? 'warning' : 'danger') }}">
                                 {{ ucfirst($shift->status) }}
                             </span>
                         </td>
                         <td>
-                            @if($shift->status === 'pending')
-                            <button class="btn-action btn-action-danger">
-                                <i class="fas fa-times"></i>
-                                <span>Cancel</span>
-                            </button>
+                            @if(in_array($shift->status, ['pending', 'assigned']))
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="btn-action btn-action-primary accept-shift" data-shift-id="{{ $shift->id }}">
+                                    <i class="fas fa-check"></i>
+                                    <span>Accept</span>
+                                </button>
+                                <button class="btn-action btn-action-danger reject-shift" data-shift-id="{{ $shift->id }}">
+                                    <i class="fas fa-times"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                            @elseif($shift->status === 'accepted' && $shift->shift_date->isToday())
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="btn-action btn-action-success start-shift-btn" data-shift-id="{{ $shift->id }}">
+                                    <i class="fas fa-play"></i>
+                                    <span>Start Shift</span>
+                                </button>
+                                <a href="{{ route('employee.shifts.show', $shift) }}" class="btn-action btn-action-primary">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Details</span>
+                                </a>
+                            </div>
                             @else
-                            <button class="btn-action btn-action-primary">
+                            <a href="{{ route('employee.shifts.show', $shift) }}" class="btn-action btn-action-primary">
                                 <i class="fas fa-eye"></i>
                                 <span>Details</span>
-                            </button>
+                            </a>
                             @endif
                         </td>
                     </tr>
@@ -440,4 +470,212 @@
         @endif
     </div>
 </div>
+
+<!-- Rejection Modal -->
+<div id="rejectionModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px;">
+        <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3 style="margin-top: 0; color: #1f2937;">Reject Shift</h3>
+        <form id="rejectionForm">
+            <div style="margin-bottom: 1rem;">
+                <label for="rejectionReason" style="display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 600;">Reason for rejection:</label>
+                <textarea id="rejectionReason" name="rejection_reason" rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; resize: vertical;" placeholder="Please provide a reason for rejecting this shift..." required></textarea>
+            </div>
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" class="btn-action btn-action-secondary" id="cancelReject" style="background: #6b7280; border-color: #6b7280; color: white;">Cancel</button>
+                <button type="submit" class="btn-action btn-action-danger">Reject Shift</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentShiftId = null;
+    const modal = document.getElementById('rejectionModal');
+    const rejectionForm = document.getElementById('rejectionForm');
+    const rejectionReason = document.getElementById('rejectionReason');
+
+    // Accept shift buttons
+    document.querySelectorAll('.accept-shift').forEach(button => {
+        button.addEventListener('click', function() {
+            const shiftId = this.getAttribute('data-shift-id');
+            acceptShift(shiftId);
+        });
+    });
+
+    // Reject shift buttons
+    document.querySelectorAll('.reject-shift').forEach(button => {
+        button.addEventListener('click', function() {
+            currentShiftId = this.getAttribute('data-shift-id');
+            modal.style.display = 'block';
+            rejectionReason.focus();
+        });
+    });
+
+    // Start shift buttons
+    document.querySelectorAll('.start-shift-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const shiftId = this.getAttribute('data-shift-id');
+            startShift(shiftId, this);
+        });
+    });
+
+    // Close modal
+    document.querySelector('.close').addEventListener('click', function() {
+        modal.style.display = 'none';
+        rejectionReason.value = '';
+        currentShiftId = null;
+    });
+
+    document.getElementById('cancelReject').addEventListener('click', function() {
+        modal.style.display = 'none';
+        rejectionReason.value = '';
+        currentShiftId = null;
+    });
+
+    // Handle rejection form submission
+    rejectionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (currentShiftId) {
+            rejectShift(currentShiftId, rejectionReason.value);
+        }
+    });
+
+    function acceptShift(shiftId) {
+        fetch(`/employee/shifts/${shiftId}/accept`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while accepting the shift');
+        });
+    }
+
+    function rejectShift(shiftId, reason) {
+        fetch(`/employee/shifts/${shiftId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ rejection_reason: reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modal.style.display = 'none';
+                rejectionReason.value = '';
+                currentShiftId = null;
+                location.reload();
+            } else {
+                alert(data.error || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while rejecting the shift');
+        });
+    }
+
+    function startShift(shiftId, button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+
+        fetch('/employee/attendance/clock-in', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                button.innerHTML = '<i class="fas fa-check"></i> Started!';
+                button.classList.remove('btn-action-success');
+                button.classList.add('btn-action-primary');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-play"></i> Start Shift';
+                showPopup(data.error || 'Failed to start shift');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-play"></i> Start Shift';
+            showPopup('An error occurred while starting the shift');
+        });
+    }
+
+    function showPopup(message) {
+        // Create popup element
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            font-weight: 600;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        popup.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(popup);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            popup.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.parentNode.removeChild(popup);
+                }
+            }, 300);
+        }, 5000);
+    }
+});
+</script>
 @endsection

@@ -16,7 +16,7 @@ class AdminController extends Controller
     {
         $totalEmployees = User::employees()->active()->count();
         $totalShifts = Shift::active()->count();
-        $pendingShiftRequests = EmployeeShift::pending()->count();
+        $pendingShiftRequests = EmployeeShift::whereIn('status', ['pending', 'assigned'])->count();
         $todayAttendance = AttendanceLog::where('attendance_date', today())->count();
 
         $recentAttendance = AttendanceLog::with(['employee', 'shift'])
@@ -24,8 +24,14 @@ class AdminController extends Controller
             ->take(10)
             ->get();
 
-        $shiftRequests = EmployeeShift::with(['employee', 'shift'])
-            ->pending()
+        $assignedShifts = EmployeeShift::with(['employee', 'shift'])
+            ->where('status', 'assigned')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $rejectedShifts = EmployeeShift::with(['employee', 'shift'])
+            ->where('status', 'rejected')
             ->latest()
             ->take(5)
             ->get();
@@ -36,7 +42,8 @@ class AdminController extends Controller
             'pendingShiftRequests',
             'todayAttendance',
             'recentAttendance',
-            'shiftRequests'
+            'assignedShifts',
+            'rejectedShifts'
         ));
     }
 
