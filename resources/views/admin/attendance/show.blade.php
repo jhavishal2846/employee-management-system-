@@ -1,121 +1,474 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-calendar-check text-success"></i> Attendance Details</h2>
-            <div>
-                <a href="{{ route('admin.attendance.edit', $attendanceLog) }}" class="btn btn-warning me-2">
-                    <i class="fas fa-edit"></i> Edit Record
-                </a>
-                <a href="{{ route('admin.attendance.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to List
-                </a>
-            </div>
-        </div>
+<style>
+    :root {
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
 
-        <div class="dashboard-card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h4 class="mb-4">Attendance Information</h4>
-                        <div class="mb-3">
-                            <strong>Employee:</strong> {{ $attendanceLog->employee->name }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Email:</strong> {{ $attendanceLog->employee->email }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Attendance Date:</strong> {{ $attendanceLog->attendance_date->format('M d, Y') }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Status:</strong>
-                            <span class="badge bg-{{ $attendanceLog->status === 'present' ? 'success' : ($attendanceLog->status === 'absent' ? 'danger' : 'warning') }}">
+    .page-header {
+        margin-bottom: 2rem;
+        animation: slideDown 0.5s ease-out;
+    }
+
+    .page-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-title h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .page-title i {
+        font-size: 1.5rem;
+        color: var(--success);
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .action-buttons-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        text-decoration: none;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px -1px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-warning-custom:hover {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px -1px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: white;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        color: #1f2937;
+    }
+
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .dashboard-card .card-body {
+        padding: 2rem;
+    }
+
+    .info-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 1.125rem;
+    }
+
+    .info-item {
+        display: flex;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 140px;
+        font-size: 0.9375rem;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .badge-custom {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-primary {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .stats-card {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .stats-card-item {
+        display: flex;
+        margin-bottom: 0.625rem;
+        font-size: 0.9375rem;
+    }
+
+    .stats-card-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .stats-card-label {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 120px;
+    }
+
+    .stats-card-value {
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .page-header-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-buttons-group {
+            flex-direction: column;
+        }
+
+        .btn-custom {
+            justify-content: center;
+        }
+
+        .info-item {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            min-width: auto;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="page-title">
+            <i class="fas fa-calendar-check"></i>
+            <h2>Attendance Details</h2>
+        </div>
+        <div class="action-buttons-group">
+            <a href="{{ route('admin.attendance.edit', $attendanceLog) }}" class="btn-custom btn-warning-custom">
+                <i class="fas fa-edit"></i>
+                <span>Edit Record</span>
+            </a>
+            <a href="{{ route('admin.attendance.index') }}" class="btn-custom btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Attendance Information
+                    </h4>
+                    <div class="info-item">
+                        <span class="info-label">Employee:</span>
+                        <span class="info-value">{{ $attendanceLog->employee->name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">
+                            <i class="fas fa-envelope" style="color: #3b82f6; margin-right: 0.375rem;"></i>
+                            {{ $attendanceLog->employee->email }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Attendance Date:</span>
+                        <span class="info-value">
+                            <i class="fas fa-calendar" style="color: #10b981; margin-right: 0.375rem;"></i>
+                            {{ $attendanceLog->attendance_date->format('M d, Y') }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">
+                            <span class="badge-custom badge-{{ $attendanceLog->status === 'present' ? 'success' : ($attendanceLog->status === 'absent' ? 'danger' : 'warning') }}">
+                                @if($attendanceLog->status === 'present')
+                                    <i class="fas fa-check" style="font-size: 0.75rem; margin-right: 0.375rem;"></i>
+                                @endif
                                 {{ ucfirst($attendanceLog->status) }}
                             </span>
-                        </div>
-                        @if($attendanceLog->login_time)
-                            <div class="mb-3">
-                                <strong>Login Time:</strong> {{ $attendanceLog->login_time->format('H:i') }}
-                            </div>
-                        @endif
-                        @if($attendanceLog->logout_time)
-                            <div class="mb-3">
-                                <strong>Logout Time:</strong> {{ $attendanceLog->logout_time->format('H:i') }}
-                            </div>
-                        @endif
-                        @if($attendanceLog->total_hours)
-                            <div class="mb-3">
-                                <strong>Total Hours:</strong> {{ number_format($attendanceLog->total_hours, 2) }}
-                            </div>
-                        @endif
-                        <div class="mb-3">
-                            <strong>Notes:</strong> {{ $attendanceLog->notes ?? 'N/A' }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Created:</strong> {{ $attendanceLog->created_at->format('M d, Y H:i') }}
-                        </div>
-                        @if($attendanceLog->updated_at != $attendanceLog->created_at)
-                            <div class="mb-3">
-                                <strong>Last Updated:</strong> {{ $attendanceLog->updated_at->format('M d, Y H:i') }}
-                            </div>
-                        @endif
+                        </span>
                     </div>
-                    <div class="col-md-6">
-                        <h4 class="mb-4">Shift Information</h4>
-                        @if($attendanceLog->shift)
-                            <div class="mb-3">
-                                <strong>Shift Name:</strong> {{ $attendanceLog->shift->shift_name }}
-                            </div>
-                            <div class="mb-3">
-                                <strong>Shift Type:</strong>
-                                <span class="badge bg-primary">{{ ucfirst($attendanceLog->shift->shift_type) }}</span>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Scheduled Time:</strong> {{ $attendanceLog->shift->start_time }} - {{ $attendanceLog->shift->end_time }}
-                            </div>
-                            <div class="mb-3">
-                                <strong>Location:</strong> {{ $attendanceLog->shift->location ?? 'N/A' }}
-                            </div>
-                        @else
-                            <p class="text-muted">No shift assigned for this attendance record</p>
-                        @endif
+                    @if($attendanceLog->login_time)
+                        <div class="info-item">
+                            <span class="info-label">Login Time:</span>
+                            <span class="info-value">
+                                <i class="fas fa-clock" style="color: #10b981; margin-right: 0.375rem;"></i>
+                                {{ $attendanceLog->login_time->format('H:i') }}
+                            </span>
+                        </div>
+                    @endif
+                    @if($attendanceLog->logout_time)
+                        <div class="info-item">
+                            <span class="info-label">Logout Time:</span>
+                            <span class="info-value">
+                                <i class="fas fa-clock" style="color: #ef4444; margin-right: 0.375rem;"></i>
+                                {{ $attendanceLog->logout_time->format('H:i') }}
+                            </span>
+                        </div>
+                    @endif
+                    @if($attendanceLog->total_hours)
+                        <div class="info-item">
+                            <span class="info-label">Total Hours:</span>
+                            <span class="info-value">
+                                <i class="fas fa-hourglass-half" style="color: #f59e0b; margin-right: 0.375rem;"></i>
+                                {{ number_format($attendanceLog->total_hours, 2) }}
+                            </span>
+                        </div>
+                    @endif
+                    <div class="info-item">
+                        <span class="info-label">Notes:</span>
+                        <span class="info-value">{{ $attendanceLog->notes ?? 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Created:</span>
+                        <span class="info-value">
+                            <i class="fas fa-calendar-plus" style="color: #6b7280; margin-right: 0.375rem;"></i>
+                            {{ $attendanceLog->created_at->format('M d, Y H:i') }}
+                        </span>
+                    </div>
+                    @if($attendanceLog->updated_at != $attendanceLog->created_at)
+                        <div class="info-item">
+                            <span class="info-label">Last Updated:</span>
+                            <span class="info-value">
+                                <i class="fas fa-edit" style="color: #6b7280; margin-right: 0.375rem;"></i>
+                                {{ $attendanceLog->updated_at->format('M d, Y H:i') }}
+                            </span>
+                        </div>
+                    @endif
+                </div>
+            </div>
 
-                        <h4 class="mb-4 mt-4">Approval Information</h4>
-                        @if($attendanceLog->approver)
-                            <div class="mb-3">
-                                <strong>Approved By:</strong> {{ $attendanceLog->approver->name }}
-                            </div>
-                            <div class="mb-3">
-                                <strong>Approval Date:</strong> {{ $attendanceLog->updated_at->format('M d, Y H:i') }}
-                            </div>
-                        @else
-                            <p class="text-muted">Not yet approved</p>
-                        @endif
+            <div class="col-md-6">
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-clock"></i>
+                        Shift Information
+                    </h4>
+                    @if($attendanceLog->shift)
+                        <div class="info-item">
+                            <span class="info-label">Shift Name:</span>
+                            <span class="info-value">{{ $attendanceLog->shift->shift_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Shift Type:</span>
+                            <span class="info-value">
+                                <span class="badge-custom badge-primary">{{ ucfirst($attendanceLog->shift->shift_type) }}</span>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Scheduled Time:</span>
+                            <span class="info-value">{{ $attendanceLog->shift->start_time }} - {{ $attendanceLog->shift->end_time }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Location:</span>
+                            <span class="info-value">
+                                @if($attendanceLog->shift->location)
+                                    <i class="fas fa-map-marker-alt" style="color: #f59e0b; margin-right: 0.375rem;"></i>
+                                    {{ $attendanceLog->shift->location }}
+                                @else
+                                    <span style="color: #9ca3af;">N/A</span>
+                                @endif
+                            </span>
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <p>No shift assigned for this attendance record</p>
+                        </div>
+                    @endif
+                </div>
 
-                        <h4 class="mb-4 mt-4">Employee Statistics</h4>
-                        @php
-                            $employeeStats = [
-                                'total_days' => $attendanceLog->employee->attendanceLogs()->count(),
-                                'present_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'present')->count(),
-                                'absent_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'absent')->count(),
-                            ];
-                            $attendance_rate = $employeeStats['total_days'] > 0 ? round(($employeeStats['present_days'] / $employeeStats['total_days']) * 100, 1) : 0;
-                        @endphp
-                        <div class="mb-3">
-                            <strong>Total Records:</strong> {{ $employeeStats['total_days'] }}
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-user-check"></i>
+                        Approval Information
+                    </h4>
+                    @if($attendanceLog->approver)
+                        <div class="info-item">
+                            <span class="info-label">Approved By:</span>
+                            <span class="info-value">{{ $attendanceLog->approver->name }}</span>
                         </div>
-                        <div class="mb-3">
-                            <strong>Present Days:</strong> {{ $employeeStats['present_days'] }}
+                        <div class="info-item">
+                            <span class="info-label">Approval Date:</span>
+                            <span class="info-value">
+                                <i class="fas fa-calendar-check" style="color: #10b981; margin-right: 0.375rem;"></i>
+                                {{ $attendanceLog->updated_at->format('M d, Y H:i') }}
+                            </span>
                         </div>
-                        <div class="mb-3">
-                            <strong>Absent Days:</strong> {{ $employeeStats['absent_days'] }}
+                    @else
+                        <div class="empty-state">
+                            <i class="fas fa-user-times"></i>
+                            <p>Not yet approved</p>
                         </div>
-                        <div class="mb-3">
-                            <strong>Attendance Rate:</strong>
-                            <span class="badge bg-{{ $attendance_rate >= 80 ? 'success' : ($attendance_rate >= 60 ? 'warning' : 'danger') }}">
-                                {{ $attendance_rate }}%
+                    @endif
+                </div>
+
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Employee Statistics
+                    </h4>
+                    @php
+                        $employeeStats = [
+                            'total_days' => $attendanceLog->employee->attendanceLogs()->count(),
+                            'present_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'present')->count(),
+                            'absent_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'absent')->count(),
+                        ];
+                        $attendance_rate = $employeeStats['total_days'] > 0 ? round(($employeeStats['present_days'] / $employeeStats['total_days']) * 100, 1) : 0;
+                    @endphp
+                    <div class="stats-card">
+                        <div class="stats-card-item">
+                            <span class="stats-card-label">Total Records:</span>
+                            <span class="stats-card-value">{{ $employeeStats['total_days'] }}</span>
+                        </div>
+                        <div class="stats-card-item">
+                            <span class="stats-card-label">Present Days:</span>
+                            <span class="stats-card-value">{{ $employeeStats['present_days'] }}</span>
+                        </div>
+                        <div class="stats-card-item">
+                            <span class="stats-card-label">Absent Days:</span>
+                            <span class="stats-card-value">{{ $employeeStats['absent_days'] }}</span>
+                        </div>
+                        <div class="stats-card-item">
+                            <span class="stats-card-label">Attendance Rate:</span>
+                            <span class="stats-card-value">
+                                <span class="badge-custom badge-{{ $attendance_rate >= 80 ? 'success' : ($attendance_rate >= 60 ? 'warning' : 'danger') }}">
+                                    {{ $attendance_rate }}%
+                                </span>
                             </span>
                         </div>
                     </div>
