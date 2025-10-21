@@ -11,18 +11,13 @@
         --secondary: #8b5cf6;
     }
 
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-
     .page-header {
         margin-bottom: 2rem;
         animation: slideDown 0.5s ease-out;
     }
 
     .page-header h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         color: #1f2937;
         margin-bottom: 0.5rem;
@@ -45,241 +40,163 @@
     }
 
     /* Stats Cards */
-    .stats-card {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        overflow: hidden;
-        position: relative;
-        min-height: 150px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: white;
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
-    .stats-card::before {
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
     }
 
-    .stats-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    .stat-card.blue::before { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+    .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+    .stat-card.orange::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .stat-card.green::before { background: linear-gradient(90deg, #10b981, #059669); }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
-    .stats-card .card-body {
-        text-align: center;
-        width: 100%;
-        padding: 1.5rem;
+    .stat-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
     }
 
-    .stats-card h3 {
-        font-size: 2.5rem;
+    .stat-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-card.blue .stat-card-icon { background: #eff6ff; color: #3b82f6; }
+    .stat-card.purple .stat-card-icon { background: #f5f3ff; color: #8b5cf6; }
+    .stat-card.orange .stat-card-icon { background: #fff7ed; color: #f59e0b; }
+    .stat-card.green .stat-card-icon { background: #ecfdf5; color: #10b981; }
+
+    .stat-card-value {
+        font-size: 2rem;
         font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
     }
 
-    .stats-card p {
+    .stat-card-label {
+        font-size: 0.875rem;
         color: #6b7280;
-        font-size: 0.95rem;
         font-weight: 500;
     }
 
-    .stats-card.blue h3 { color: #3b82f6; }
-    .stats-card.purple h3 { color: #8b5cf6; }
-    .stats-card.orange h3 { color: #f59e0b; }
-    .stats-card.green h3 { color: #10b981; }
+    .stat-card-trend {
+        font-size: 0.75rem;
+        color: #10b981;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
 
     /* Dashboard Cards */
     .dashboard-card {
-        border: none;
+        background: white;
         border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        margin-bottom: 1.5rem;
         transition: box-shadow 0.3s ease;
     }
 
     .dashboard-card:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .dashboard-card .card-header {
-        background: linear-gradient(135deg, #1f2937 0%, #374151 100%) !important;
-        border: none;
-        padding: 1.5rem;
+    .dashboard-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
-    .dashboard-card .card-header h5 {
-        color: white;
+    .dashboard-card-header h5 {
+        font-size: 1.125rem;
         font-weight: 600;
-        font-size: 1.1rem;
-    }
-
-    .dashboard-card .card-body {
-        padding: 1.5rem;
-        background: white;
-    }
-
-    /* Table Styles */
-    .table {
-        font-size: 0.95rem;
-    }
-
-    .table thead th {
-        background: #f3f4f6;
-        color: #374151;
-        font-weight: 600;
-        border: none;
-        padding: 1rem;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-    }
-
-    .table tbody td {
-        padding: 1rem;
-        border: none;
-        border-bottom: 1px solid #e5e7eb;
-        vertical-align: middle;
-    }
-
-    .table tbody tr:hover {
-        background: #f9fafb;
-        transition: background 0.2s ease;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Badge Styles */
-    .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .badge.bg-success {
-        background: #d1fae5 !important;
-        color: #065f46;
-    }
-
-    .badge.bg-danger {
-        background: #fee2e2 !important;
-        color: #7f1d1d;
-    }
-
-    .badge.bg-warning {
-        background: #fef3c7 !important;
-        color: #92400e;
-    }
-
-    /* Action Buttons */
-    .btn-action {
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
-        border: none;
-    }
-
-    .btn-success {
-        background: var(--success);
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: #059669;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-danger {
-        background: var(--danger);
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background: #dc2626;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-
-    /* Quick Actions */
-    .quick-action-btn {
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 1.5rem;
-        text-decoration: none;
         color: #1f2937;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: block;
-        text-align: center;
+        margin: 0;
     }
 
-    .quick-action-btn:hover {
-        border-color: var(--primary);
-        background: #eff6ff;
-        color: var(--primary);
-        transform: translateY(-4px);
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.15);
+    .dashboard-card-body {
+        padding: 1.5rem;
     }
 
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #9ca3af;
-    }
-
-    .empty-state p {
-        font-size: 0.95rem;
-    }
-
-    /* Request Card */
+    /* Request Cards */
     .request-card {
         background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         border-left: 4px solid var(--primary);
         border-radius: 8px;
         padding: 1rem;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
     }
 
     .request-card:hover {
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.15);
+        transform: translateX(4px);
     }
 
     .request-card-header {
         display: flex;
         justify-content: space-between;
-        align-items: start;
+        align-items: center;
         margin-bottom: 0.75rem;
     }
 
-    .request-card-header strong {
+    .request-card-title {
+        font-weight: 600;
         color: #1f2937;
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     .request-card-body {
-        font-size: 0.85rem;
-        color: #6b7280;
         margin-bottom: 0.75rem;
+    }
+
+    .request-card-detail {
+        font-size: 0.875rem;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .request-card-detail i {
+        width: 16px;
+        color: var(--primary);
     }
 
     .request-actions {
@@ -290,67 +207,226 @@
     .request-actions .btn {
         flex: 1;
         padding: 0.5rem 1rem;
-        font-size: 0.85rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .request-actions .btn-success {
+        background: var(--success);
+        color: white;
+    }
+
+    .request-actions .btn-success:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .request-actions .btn-danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .request-actions .btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    /* Table Styles */
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .custom-table thead th {
+        background: #f9fafb;
+        color: #374151;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .custom-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: #1f2937;
+    }
+
+    .custom-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .custom-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges */
+    .badge-custom {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* Quick Action Buttons */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1.5rem 1rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        color: #1f2937;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .quick-action-btn:hover {
+        border-color: var(--primary);
+        background: #eff6ff;
+        color: var(--primary);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+    }
+
+    .quick-action-icon {
+        font-size: 2rem;
+    }
+
+    .quick-action-text {
+        font-size: 0.9375rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #9ca3af;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 1rem;
+        color: #6b7280;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
     }
 </style>
 
 <div class="page-header">
-    <div class="row align-items-center">
-        <div class="col">
-            <h1>Admin Dashboard</h1>
-            <p>Welcome back! Here's your office management overview.</p>
-        </div>
-    </div>
+    <h1>Admin Dashboard 👨‍💼</h1>
+    <p>Welcome back! Here's your office management overview.</p>
 </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card blue">
-            <div class="card-body">
-                <h3>{{ $totalEmployees }}</h3>
-                <p>Total Employees</p>
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="fas fa-users"></i>
             </div>
         </div>
+        <div class="stat-card-value">{{ $totalEmployees }}</div>
+        <div class="stat-card-label">Total Employees</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card purple">
-            <div class="card-body">
-                <h3>{{ $totalShifts }}</h3>
-                <p>Active Shifts</p>
+    <div class="stat-card purple">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
+        <div class="stat-card-value">{{ $totalShifts }}</div>
+        <div class="stat-card-label">Active Shifts</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card orange">
-            <div class="card-body">
-                <h3>{{ $pendingShiftRequests }}</h3>
-                <p>Pending Requests</p>
+    <div class="stat-card orange">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="fas fa-hourglass-half"></i>
             </div>
         </div>
+        <div class="stat-card-value">{{ $pendingShiftRequests }}</div>
+        <div class="stat-card-label">Pending Requests</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card green">
-            <div class="card-body">
-                <h3>{{ $todayAttendance }}</h3>
-                <p>Today's Attendance</p>
+    <div class="stat-card green">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="fas fa-user-check"></i>
             </div>
         </div>
+        <div class="stat-card-value">{{ $todayAttendance }}</div>
+        <div class="stat-card-label">Today's Attendance</div>
     </div>
 </div>
 
 <!-- Dashboard Content -->
 <div class="row">
     <!-- Recent Attendance -->
-    <div class="col-lg-6 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header">
-                <h5 class="mb-0">Recent Attendance</h5>
+    <div class="col-lg-6">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5>Recent Attendance</h5>
+                <a href="{{ route('admin.attendance.index') }}" style="text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--primary);">
+                    View All <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
+                </a>
             </div>
-            <div class="card-body">
+            <div class="dashboard-card-body" style="padding: 0;">
                 @if($recentAttendance->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="custom-table">
                             <thead>
                                 <tr>
                                     <th>Employee</th>
@@ -361,13 +437,26 @@
                             <tbody>
                                 @foreach($recentAttendance as $attendance)
                                     <tr>
-                                        <td>{{ $attendance->employee->name }}</td>
                                         <td>
-                                            <span class="badge bg-{{ $attendance->status == 'present' ? 'success' : ($attendance->status == 'absent' ? 'danger' : 'warning') }}">
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 600;">
+                                                    {{ substr($attendance->employee->name, 0, 1) }}
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">{{ $attendance->employee->name }}</div>
+                                                    <div style="font-size: 0.875rem; color: #6b7280;">{{ $attendance->employee->email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge-custom badge-{{ $attendance->status == 'present' ? 'success' : ($attendance->status == 'absent' ? 'danger' : 'warning') }}">
                                                 {{ ucfirst($attendance->status) }}
                                             </span>
                                         </td>
-                                        <td>{{ $attendance->attendance_date->format('M d, Y') }}</td>
+                                        <td>
+                                            <div style="font-weight: 500;">{{ $attendance->attendance_date->format('M d, Y') }}</div>
+                                            <div style="font-size: 0.875rem; color: #6b7280;">{{ $attendance->attendance_date->format('l') }}</div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -375,7 +464,8 @@
                     </div>
                 @else
                     <div class="empty-state">
-                        <p>No recent attendance records found.</p>
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">No recent attendance records found</div>
                     </div>
                 @endif
             </div>
@@ -383,31 +473,43 @@
     </div>
 
     <!-- Pending Shift Requests -->
-    <div class="col-lg-6 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header">
-                <h5 class="mb-0">Pending Shift Requests</h5>
+    <div class="col-lg-6">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5>Pending Shift Requests</h5>
+                <span class="badge-custom badge-warning">{{ $shiftRequests->count() }} Pending</span>
             </div>
-            <div class="card-body">
+            <div class="dashboard-card-body">
                 @if($shiftRequests->count() > 0)
                     @foreach($shiftRequests as $request)
                         <div class="request-card">
                             <div class="request-card-header">
-                                <strong>{{ $request->employee->name }}</strong>
+                                <div class="request-card-title">{{ $request->employee->name }}</div>
                             </div>
                             <div class="request-card-body">
-                                <div><strong>{{ $request->shift->shift_name }}</strong></div>
-                                <small>{{ $request->shift_date->format('M d, Y') }}</small>
+                                <div class="request-card-detail">
+                                    <i class="fas fa-briefcase"></i>
+                                    <strong>{{ $request->shift->shift_name }}</strong>
+                                </div>
+                                <div class="request-card-detail">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>{{ $request->shift_date->format('M d, Y') }}</span>
+                                </div>
                             </div>
                             <div class="request-actions">
-                                <button class="btn btn-success btn-action">Approve</button>
-                                <button class="btn btn-danger btn-action">Reject</button>
+                                <button class="btn btn-success">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
                             </div>
                         </div>
                     @endforeach
                 @else
                     <div class="empty-state">
-                        <p>No pending shift requests.</p>
+                        <div class="empty-state-icon">✅</div>
+                        <div class="empty-state-text">No pending shift requests</div>
                     </div>
                 @endif
             </div>
@@ -416,28 +518,28 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="row">
-    <div class="col-12">
-        <div class="card dashboard-card">
-            <div class="card-header">
-                <h5 class="mb-0">Quick Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 mb-2">
-                        <a href="{{ route('admin.employees.index') }}" class="quick-action-btn">👥 Manage Employees</a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="{{ route('admin.shifts.create') }}" class="quick-action-btn">📅 Create Shift</a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="{{ route('admin.reports.index') }}" class="quick-action-btn">📊 View Reports</a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="{{ route('admin.attendance.index') }}" class="quick-action-btn">✓ Attendance Overview</a>
-                    </div>
-                </div>
-            </div>
+<div class="dashboard-card">
+    <div class="dashboard-card-header">
+        <h5>Quick Actions</h5>
+    </div>
+    <div class="dashboard-card-body">
+        <div class="quick-actions-grid">
+            <a href="{{ route('admin.employees.index') }}" class="quick-action-btn">
+                <div class="quick-action-icon">👥</div>
+                <div class="quick-action-text">Manage Employees</div>
+            </a>
+            <a href="{{ route('admin.shifts.create') }}" class="quick-action-btn">
+                <div class="quick-action-icon">📅</div>
+                <div class="quick-action-text">Create Shift</div>
+            </a>
+            <a href="{{ route('admin.reports.index') }}" class="quick-action-btn">
+                <div class="quick-action-icon">📊</div>
+                <div class="quick-action-text">View Reports</div>
+            </a>
+            <a href="{{ route('admin.attendance.index') }}" class="quick-action-btn">
+                <div class="quick-action-icon">✓</div>
+                <div class="quick-action-text">Attendance Overview</div>
+            </a>
         </div>
     </div>
 </div>

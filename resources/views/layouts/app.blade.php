@@ -11,145 +11,283 @@
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=Inter:400,500,600,700" rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Nunito', sans-serif;
+        :root {
+            --brand-color: #3b82f6;
+            --brand-hover: #2563eb;
+            --sidebar-width-expanded: 290px;
+            --sidebar-width-collapsed: 90px;
+            --navbar-height: 64px;
         }
-        .sidebar {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f9fafb;
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e5e7eb;
+            height: var(--navbar-height);
             position: fixed;
             top: 0;
             left: 0;
-            height: 100vh;
-            width: 250px;
-            background-color: #343a40;
-            color: white;
-            padding-top: 70px;
+            right: 0;
             z-index: 1000;
-            transition: all 0.3s;
+            padding: 0 1.25rem;
         }
+
+        .navbar-brand {
+            color: #111827 !important;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            height: calc(100vh - var(--navbar-height));
+            width: var(--sidebar-width-expanded);
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
         .sidebar.collapsed {
-            width: 70px;
+            width: var(--sidebar-width-collapsed);
         }
-        .sidebar.collapsed .nav-link span {
-            display: none;
+
+        .sidebar-content {
+            padding: 1.5rem 1.25rem;
         }
-        .sidebar.collapsed .nav-link i {
-            margin-right: 0;
-            text-align: center;
-            width: 100%;
+
+        /* Menu Group Styles */
+        .menu-group {
+            margin-bottom: 2rem;
         }
-        .sidebar .nav-link {
-            color: #adb5bd;
-            padding: 12px 20px;
-            display: block;
+
+        .menu-group-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #9ca3af;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            padding-left: 0.75rem;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .menu-group-title {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed:hover .menu-group-title {
+            opacity: 1;
+            height: auto;
+            margin-bottom: 1rem;
+            padding-left: 0.75rem;
+        }
+
+        /* Menu Items */
+        .menu-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .menu-item {
+            position: relative;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
             text-decoration: none;
-            transition: all 0.3s;
+            color: #6b7280;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .menu-link:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        .menu-link.active {
+            background-color: #eff6ff;
+            color: var(--brand-color);
+        }
+
+        .menu-link.active .menu-icon {
+            color: var(--brand-color);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            color: #9ca3af;
+            transition: all 0.2s;
+        }
+
+        .menu-link:hover .menu-icon {
+            color: #111827;
+        }
+
+        .menu-text {
+            flex: 1;
             white-space: nowrap;
+            transition: opacity 0.3s;
         }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: #28a745;
-            background-color: rgba(40, 167, 69, 0.1);
+
+        .sidebar.collapsed .menu-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
         }
-        .sidebar .nav-link i {
-            margin-right: 10px;
+
+        .sidebar.collapsed:hover .menu-text {
+            opacity: 1;
+            width: auto;
+        }
+
+        .menu-arrow {
+            width: 20px;
+            height: 20px;
+            margin-left: auto;
+            transition: transform 0.2s, opacity 0.3s;
+        }
+
+        .menu-arrow.rotated {
+            transform: rotate(180deg);
+        }
+
+        .sidebar.collapsed .menu-arrow {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar.collapsed:hover .menu-arrow {
+            opacity: 1;
             width: 20px;
         }
+
+        /* Submenu Styles */
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0 0 2.5rem;
+            display: none;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .submenu-link:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        .submenu-link.active {
+            background-color: #eff6ff;
+            color: var(--brand-color);
+        }
+
+        /* Main Content */
         .main-content {
-            margin-left: 250px;
-            padding-top: 70px;
-            min-height: 100vh;
-            transition: margin-left 0.3s;
+            margin-left: var(--sidebar-width-expanded);
+            margin-top: var(--navbar-height);
+            padding: 1.5rem;
+            min-height: calc(100vh - var(--navbar-height));
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .main-content.expanded {
-            margin-left: 70px;
+            margin-left: var(--sidebar-width-collapsed);
         }
-        .navbar {
-            background-color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            height: 70px;
-        }
-        .navbar-brand {
-            color: #343a40 !important;
-            font-weight: bold;
-        }
-        .dashboard-card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-            padding: 1.5rem;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-        }
-        .dashboard-card .card-body {
-            padding: 0;
-        }
-        .btn-primary {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .btn-primary:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-        .table {
-            background-color: white;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 0;
-        }
-        .table thead th {
-            background-color: #343a40;
-            color: white;
-            border: none;
-            padding: 1rem;
-        }
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-        .table tbody tr:hover {
-            background-color: #f1f3f4;
-        }
-        .stats-card {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-        }
-        .stats-card .card-body {
-            text-align: center;
-            padding: 0;
-        }
-        .stats-card h3 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .stats-card p {
-            margin-bottom: 0;
-            opacity: 0.8;
-        }
-        @media (max-width: 768px) {
+
+        /* Mobile Styles */
+        @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
-                width: 250px;
+                top: 0;
+                height: 100vh;
+                z-index: 1050;
             }
+
             .sidebar.show {
                 transform: translateX(0);
             }
+
             .main-content {
                 margin-left: 0;
             }
-            .overlay {
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .sidebar-overlay {
                 display: none;
                 position: fixed;
                 top: 0;
@@ -157,33 +295,84 @@
                 width: 100%;
                 height: 100%;
                 background-color: rgba(0, 0, 0, 0.5);
-                z-index: 999;
+                z-index: 1049;
             }
-            .overlay.show {
+
+            .sidebar-overlay.show {
                 display: block;
             }
+
+            .sidebar .menu-text,
+            .sidebar .menu-arrow,
+            .sidebar .menu-group-title {
+                opacity: 1 !important;
+                width: auto !important;
+                height: auto !important;
+                margin: initial !important;
+                padding: initial !important;
+            }
         }
+
+        /* Toggle Button */
         .sidebar-toggle {
             background: none;
             border: none;
-            color: #343a40;
-            font-size: 1.2rem;
+            color: #6b7280;
+            font-size: 1.25rem;
             cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        /* User Dropdown */
+        .user-dropdown .dropdown-toggle {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .user-dropdown .dropdown-toggle:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Utility Classes */
+        .d-lg-none {
+            display: none !important;
+        }
+
+        @media (max-width: 991px) {
+            .d-lg-none {
+                display: block !important;
+            }
+            .d-lg-block {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- Mobile Overlay -->
-        <div class="overlay d-md-none" id="sidebarOverlay"></div>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <button class="sidebar-toggle d-none d-md-block me-2" id="sidebarToggle" type="button">
+                <button class="sidebar-toggle d-lg-block me-2" id="sidebarToggle" type="button">
                     <i class="fas fa-bars"></i>
                 </button>
-                <button class="btn btn-outline-secondary d-md-none" type="button" id="mobileSidebarToggle" aria-label="Toggle navigation">
+                <button class="sidebar-toggle d-lg-none" type="button" id="mobileSidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>
                 <a class="navbar-brand ms-2" href="{{ url('/') }}">
@@ -191,16 +380,17 @@
                 </a>
                 <div class="ms-auto">
                     @auth
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="dropdown user-dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ Auth::user()->name }}
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        Logout
-                                    </a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                    </a>
+                                </li>
                             </ul>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf
@@ -213,51 +403,108 @@
 
         @auth
         <!-- Sidebar -->
-        <div class="sidebar d-none d-md-block" id="sidebarMenu">
-            <nav class="nav flex-column">
+        <aside class="sidebar" id="sidebarMenu">
+            <div class="sidebar-content">
+                <!-- Admin Menu -->
                 @if(Auth::user()->isAdmin())
-                    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('admin.employees*') ? 'active' : '' }}" href="{{ route('admin.employees.index') }}">
-                        <i class="fas fa-users"></i> <span>Employees</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('admin.shifts*') ? 'active' : '' }}" href="{{ route('admin.shifts.index') }}">
-                        <i class="fas fa-clock"></i> <span>Shifts</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('admin.attendance*') ? 'active' : '' }}" href="{{ route('admin.attendance.index') }}">
-                        <i class="fas fa-calendar-check"></i> <span>Attendance</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
-                        <i class="fas fa-chart-bar"></i> <span>Reports</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
-                        <i class="fas fa-cog"></i> <span>Settings</span>
-                    </a>
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Menu</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                    <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                                    <span class="menu-text">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.employees*') ? 'active' : '' }}" href="{{ route('admin.employees.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-users"></i></span>
+                                    <span class="menu-text">Employees</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.shifts*') ? 'active' : '' }}" href="{{ route('admin.shifts.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-clock"></i></span>
+                                    <span class="menu-text">Shifts</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.attendance*') ? 'active' : '' }}" href="{{ route('admin.attendance.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-calendar-check"></i></span>
+                                    <span class="menu-text">Attendance</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Others</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-chart-bar"></i></span>
+                                    <span class="menu-text">Reports</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
+                                    <span class="menu-text">Settings</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 @else
-                    <a class="nav-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}" href="{{ route('employee.dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('employee.shifts*') ? 'active' : '' }}" href="{{ route('employee.shifts.index') }}">
-                        <i class="fas fa-clock"></i> <span>My Shifts</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('employee.attendance*') ? 'active' : '' }}" href="{{ route('employee.attendance.index') }}">
-                        <i class="fas fa-calendar-check"></i> <span>Attendance</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('employee.requests*') ? 'active' : '' }}" href="{{ route('employee.requests.index') }}">
-                        <i class="fas fa-exchange-alt"></i> <span>Shift Requests</span>
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('employee.profile*') ? 'active' : '' }}" href="{{ route('employee.profile.edit') }}">
-                        <i class="fas fa-user"></i> <span>Profile</span>
-                    </a>
+                    <!-- Employee Menu -->
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Menu</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}" href="{{ route('employee.dashboard') }}">
+                                    <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                                    <span class="menu-text">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('employee.shifts*') ? 'active' : '' }}" href="{{ route('employee.shifts.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-clock"></i></span>
+                                    <span class="menu-text">My Shifts</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('employee.attendance*') ? 'active' : '' }}" href="{{ route('employee.attendance.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-calendar-check"></i></span>
+                                    <span class="menu-text">Attendance</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Others</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('employee.requests*') ? 'active' : '' }}" href="{{ route('employee.requests.index') }}">
+                                    <span class="menu-icon"><i class="fas fa-exchange-alt"></i></span>
+                                    <span class="menu-text">Shift Requests</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('employee.profile*') ? 'active' : '' }}" href="{{ route('employee.profile.edit') }}">
+                                    <span class="menu-icon"><i class="fas fa-user"></i></span>
+                                    <span class="menu-text">Profile</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 @endif
-            </nav>
-        </div>
+            </div>
+        </aside>
         @endauth
 
         <!-- Main Content -->
         <main class="main-content" id="mainContent">
-            <div class="container-fluid py-4 px-4">
+            <div class="container-fluid">
                 @yield('content')
             </div>
         </main>
@@ -292,7 +539,7 @@
         let deleteUrl = '';
         let csrfToken = '{{ csrf_token() }}';
 
-        // Delete functions for different entities
+        // Delete functions
         function deleteEmployee(id, name) {
             deleteUrl = '{{ route("admin.employees.index") }}/' + id;
             document.getElementById('deleteMessage').textContent = `Are you sure you want to delete employee "${name}"? This action cannot be undone.`;
@@ -339,7 +586,7 @@
             }
         });
 
-        // Sidebar toggle functionality
+        // Sidebar functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
@@ -347,7 +594,7 @@
             const mainContent = document.getElementById('mainContent');
             const overlay = document.getElementById('sidebarOverlay');
 
-            // Desktop sidebar toggle (collapse/expand)
+            // Desktop sidebar toggle
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
                     sidebar.classList.toggle('collapsed');
@@ -362,20 +609,31 @@
                     overlay.classList.toggle('show');
                 });
 
-                // Close sidebar when clicking overlay
                 overlay.addEventListener('click', function() {
                     sidebar.classList.remove('show');
                     overlay.classList.remove('show');
                 });
             }
 
-            // Close mobile sidebar when clicking a nav link
-            const navLinks = sidebar.querySelectorAll('.nav-link');
+            // Close mobile sidebar on nav link click
+            const navLinks = sidebar.querySelectorAll('.menu-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
+                    if (window.innerWidth < 992) {
                         sidebar.classList.remove('show');
                         overlay.classList.remove('show');
+                    }
+                });
+            });
+
+            // Submenu toggle functionality
+            const menuButtons = document.querySelectorAll('.menu-link[data-bs-toggle="collapse"]');
+            menuButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const arrow = this.querySelector('.menu-arrow');
+                    if (arrow) {
+                        arrow.classList.toggle('rotated');
                     }
                 });
             });

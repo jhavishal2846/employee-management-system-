@@ -1,26 +1,39 @@
-# Employee Shift Management System - CRUD Implementation
+# Task: Make employee/attendance, employee/requests, and employee/profile pages design same as employee/shifts
 
-## Employees Management CRUD
-- [x] Update AdminController with create, store, show, edit, update, destroy methods for employees
-- [x] Update routes for employee CRUD operations
-- [x] Create employee form view (admin/employees/form.blade.php) - handles both create and edit
-- [ ] Create employee show view (admin/employees/show.blade.php)
+## Overview
+Update the design of employee pages to match the modern, custom-styled design of the shifts page, which includes:
+- Custom CSS with variables, animations, and responsive design
+- Page header with title and back button
+- Dashboard card wrapper
+- Custom table styling (for attendance and requests)
+- Consistent badges, buttons, and empty states
+- Responsive layout
 
-## Shifts Management CRUD
-- [x] Update AdminController with create, store, show, edit, update, destroy methods for shifts
-- [x] Update routes for shift CRUD operations
-- [x] Create shift form view (admin/shifts/form.blade.php) - handles both create and edit
-- [ ] Create shift show view (admin/shifts/show.blade.php)
+## Steps
+- [x] Update employee/attendance/index.blade.php
+  - Replace Bootstrap classes with custom CSS from shifts page
+  - Adapt page header to match shifts design
+  - Style stats cards to fit the design (keep functionality)
+  - Update table to use custom-table class and styling
+  - Add empty state and pagination styling
 
-## Attendance Management CRUD
-- [x] Update AdminController with create, store, show, edit, update, destroy methods for attendance
-- [x] Update routes for attendance CRUD operations
-- [x] Create attendance form view (admin/attendance/form.blade.php) - handles both create and edit
-- [ ] Create attendance show view (admin/attendance/show.blade.php)
+- [x] Update employee/requests/index.blade.php
+  - Replace Bootstrap classes with custom CSS from shifts page
+  - Adapt page header to match shifts design
+  - Update table to use custom-table class and styling
+  - Add empty state and pagination styling
 
-## Additional Features
-- [ ] Add validation rules for all forms
-- [ ] Add success/error flash messages
-- [ ] Implement soft delete handling
-- [ ] Add confirmation dialogs for delete operations
-- [ ] Update navigation links in views to point to CRUD routes
+- [x] Update employee/profile/index.blade.php
+  - Apply page header styling from shifts page
+  - Style dashboard cards with custom CSS
+  - Update badges and buttons to match design
+  - Ensure responsive layout
+
+## Dependent Files
+- resources/views/employee/attendance/index.blade.php
+- resources/views/employee/requests/index.blade.php
+- resources/views/employee/profile/index.blade.php
+
+## Followup Steps
+- Test the pages for responsiveness and functionality
+- Ensure no broken links or missing data
