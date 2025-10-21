@@ -1,136 +1,559 @@
 @extends('layouts.app')
 
+
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-user-plus text-success"></i> {{ isset($employee) ? 'Edit Employee' : 'Add New Employee' }}</h2>
-            <a href="{{ route('admin.employees.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Employees
-            </a>
-        </div>
+<style>
+/* Form Container Styles */
+.form-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #f9fafb;
+    min-height: 100vh;
+}
 
-        <div class="dashboard-card">
-            <div class="card-body">
-                <form action="{{ isset($employee) ? route('admin.employees.update', $employee) : route('admin.employees.store') }}"
-                      method="POST">
-                    @csrf
-                    @if(isset($employee))
-                        @method('PUT')
-                    @endif
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                       id="name" name="name" value="{{ old('name', $employee->name ?? '') }}" required>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                       id="email" name="email" value="{{ old('email', $employee->email ?? '') }}" required>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
 
-                    @if(!isset($employee))
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                       id="password" name="password" required>
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+.form-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control @error('phone') is-invalid @enderror"
-                                       id="phone" name="phone" value="{{ old('phone', $employee->phone ?? '') }}">
-                                @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #1f2937;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="department" class="form-label">Department</label>
-                                <input type="text" class="form-control @error('department') is-invalid @enderror"
-                                       id="department" name="department" value="{{ old('department', $employee->department ?? '') }}">
-                                @error('department')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="hourly_rate" class="form-label">Hourly Rate <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control @error('hourly_rate') is-invalid @enderror"
-                                           id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate', $employee->hourly_rate ?? '15.00') }}"
-                                           step="0.01" min="0" required>
-                                    @error('hourly_rate')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
+.btn-back:hover {
+    background: #111827;
+}
 
-                        @if(isset($employee))
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
-                                    <option value="active" {{ old('status', $employee->status ?? 'active') == 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ old('status', $employee->status ?? 'active') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                    <option value="blocked" {{ old('status', $employee->status ?? 'active') == 'blocked' ? 'selected' : '' }}>Blocked</option>
-                                </select>
-                                @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        @endif
-                    </div>
 
-                    <div class="d-flex justify-content-end">
-                        <a href="{{ route('admin.employees.index') }}" class="btn btn-secondary me-2">Cancel</a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> {{ isset($employee) ? 'Update Employee' : 'Create Employee' }}
-                        </button>
-                    </div>
-                </form>
+.form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Form Layout */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+
+@media (min-width: 768px) {
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* Form Group */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+
+.required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+
+/* Input Wrapper for Icons */
+.input-wrapper {
+    position: relative;
+}
+
+
+/* Base Input Styles */
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #1f2937;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+    outline: none;
+    font-family: inherit;
+}
+
+
+.form-input {
+    height: 48px;
+}
+
+
+/* Enhanced Select Dropdown Styling */
+.form-select {
+    height: 48px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 44px;
+    cursor: pointer;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 20px;
+}
+
+
+/* When a select option is chosen, make text darker */
+.form-select:not([value=""]):valid,
+.form-select.has-value {
+    color: #1f2937;
+}
+
+
+/* Placeholder style for select */
+.form-select option[value=""][disabled] {
+    color: #9ca3af;
+}
+
+
+.form-select option:not([value=""]) {
+    color: #1f2937;
+}
+
+
+/* Focus states for select */
+.form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%233b82f6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+
+.form-select:hover {
+    border-color: #d1d5db;
+}
+
+
+/* Time and Date Input Styles */
+.form-input[type="time"],
+.form-input[type="date"] {
+    padding-right: 44px;
+    cursor: pointer;
+}
+
+
+/* Textarea */
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+    padding: 12px 16px;
+    line-height: 1.6;
+}
+
+
+/* Placeholder styles */
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: #9ca3af;
+}
+
+
+/* Hover states */
+.form-input:hover,
+.form-textarea:hover {
+    border-color: #d1d5db;
+}
+
+
+/* Focus states */
+.form-input:focus,
+.form-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+
+/* Error States */
+.form-input.is-invalid,
+.form-select.is-invalid,
+.form-textarea.is-invalid {
+    border-color: #ef4444;
+}
+
+
+.form-input.is-invalid:focus,
+.form-select.is-invalid:focus,
+.form-textarea.is-invalid:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+
+.error-message {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #ef4444;
+}
+
+
+/* Icons - Only for time/date inputs now */
+.input-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #9ca3af;
+}
+
+
+.input-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* Hide native date/time picker icons */
+.form-input[type="date"]::-webkit-calendar-picker-indicator,
+.form-input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    width: 40px;
+    height: 100%;
+    cursor: pointer;
+}
+
+
+/* Firefox specific select arrow hiding */
+.form-select::-ms-expand {
+    display: none;
+}
+
+
+/* Currency Input Styling */
+.input-with-currency {
+    padding-left: 32px;
+}
+
+
+.currency-symbol {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* Buttons */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid #e5e7eb;
+}
+
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+
+.btn-secondary {
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+
+.btn-success {
+    background: #10b981;
+    color: #ffffff;
+}
+
+
+.btn-success:hover {
+    background: #059669;
+}
+</style>
+
+
+<div class="form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-user-plus" style="color: #10b981;"></i>
+            {{ isset($employee) ? 'Edit Employee' : 'Add New Employee' }}
+        </h1>
+        <a href="{{ route('admin.employees.index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Employees
+        </a>
+    </div>
+
+
+    <div class="form-card">
+        <form action="{{ isset($employee) ? route('admin.employees.update', $employee) : route('admin.employees.store') }}"
+              method="POST">
+            @csrf
+            @if(isset($employee))
+                @method('PUT')
+            @endif
+
+
+            <div class="form-row">
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label for="name" class="form-label">
+                        Full Name <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           value="{{ old('name', $employee->name ?? '') }}"
+                           class="form-input @error('name') is-invalid @enderror"
+                           placeholder="Enter full name"
+                           required>
+                    @error('name')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
+                <!-- Email Address -->
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        Email Address <span class="required">*</span>
+                    </label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           value="{{ old('email', $employee->email ?? '') }}"
+                           class="form-input @error('email') is-invalid @enderror"
+                           placeholder="Enter email address"
+                           required>
+                    @error('email')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
-        </div>
+
+
+            @if(!isset($employee))
+            <div class="form-row">
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        Password <span class="required">*</span>
+                    </label>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-input @error('password') is-invalid @enderror"
+                           placeholder="Enter password"
+                           required>
+                    @error('password')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="password_confirmation" class="form-label">
+                        Confirm Password <span class="required">*</span>
+                    </label>
+                    <input type="password"
+                           id="password_confirmation"
+                           name="password_confirmation"
+                           class="form-input"
+                           placeholder="Confirm password"
+                           required>
+                </div>
+            </div>
+            @endif
+
+
+            <div class="form-row">
+                <!-- Phone Number -->
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel"
+                           id="phone"
+                           name="phone"
+                           value="{{ old('phone', $employee->phone ?? '') }}"
+                           class="form-input @error('phone') is-invalid @enderror"
+                           placeholder="Enter phone number">
+                    @error('phone')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
+                <!-- Department -->
+                <div class="form-group">
+                    <label for="department" class="form-label">Department</label>
+                    <input type="text"
+                           id="department"
+                           name="department"
+                           value="{{ old('department', $employee->department ?? '') }}"
+                           class="form-input @error('department') is-invalid @enderror"
+                           placeholder="Enter department">
+                    @error('department')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+
+            <div class="form-row">
+                <!-- Hourly Rate -->
+                <div class="form-group">
+                    <label for="hourly_rate" class="form-label">
+                        Hourly Rate <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">$</span>
+                        <input type="number"
+                               id="hourly_rate"
+                               name="hourly_rate"
+                               value="{{ old('hourly_rate', $employee->hourly_rate ?? '15.00') }}"
+                               class="form-input input-with-currency @error('hourly_rate') is-invalid @enderror"
+                               step="0.01"
+                               min="0"
+                               placeholder="15.00"
+                               required>
+                    </div>
+                    @error('hourly_rate')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
+                @if(isset($employee))
+                <!-- Status -->
+                <div class="form-group">
+                    <label for="status" class="form-label">
+                        Status <span class="required">*</span>
+                    </label>
+                    <select id="status"
+                            name="status"
+                            class="form-select @error('status') is-invalid @enderror"
+                            required>
+                        <option value="" disabled selected>Select Status</option>
+                        <option value="active" {{ old('status', $employee->status ?? 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ old('status', $employee->status ?? 'active') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="blocked" {{ old('status', $employee->status ?? 'active') == 'blocked' ? 'selected' : '' }}>Blocked</option>
+                    </select>
+                    @error('status')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+                @endif
+            </div>
+
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <a href="{{ route('admin.employees.index') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i>
+                    {{ isset($employee) ? 'Update Employee' : 'Create Employee' }}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+
+<script>
+// Add 'has-value' class to selects when they have a value
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('.form-select');
+
+
+    selects.forEach(select => {
+        // Check on load
+        if (select.value && select.value !== '') {
+            select.classList.add('has-value');
+        }
+
+
+        // Check on change
+        select.addEventListener('change', function() {
+            if (this.value && this.value !== '') {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+    });
+});
+</script>
 @endsection

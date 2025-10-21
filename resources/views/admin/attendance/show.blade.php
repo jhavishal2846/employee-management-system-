@@ -295,13 +295,23 @@
                     </h4>
                     <div class="info-item">
                         <span class="info-label">Employee:</span>
-                        <span class="info-value">{{ $attendanceLog->employee->name }}</span>
+                        <span class="info-value">
+                            @if($attendanceLog->employee)
+                                {{ $attendanceLog->employee->name }}
+                            @else
+                                Unknown Employee
+                            @endif
+                        </span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Email:</span>
                         <span class="info-value">
                             <i class="fas fa-envelope" style="color: #3b82f6; margin-right: 0.375rem;"></i>
-                            {{ $attendanceLog->employee->email }}
+                            @if($attendanceLog->employee)
+                                {{ $attendanceLog->employee->email }}
+                            @else
+                                N/A
+                            @endif
                         </span>
                     </div>
                     <div class="info-item">
@@ -444,9 +454,9 @@
                     </h4>
                     @php
                         $employeeStats = [
-                            'total_days' => $attendanceLog->employee->attendanceLogs()->count(),
-                            'present_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'present')->count(),
-                            'absent_days' => $attendanceLog->employee->attendanceLogs()->where('status', 'absent')->count(),
+                            'total_days' => $attendanceLog->employee ? $attendanceLog->employee->attendanceLogs()->count() : 0,
+                            'present_days' => $attendanceLog->employee ? $attendanceLog->employee->attendanceLogs()->where('status', 'present')->count() : 0,
+                            'absent_days' => $attendanceLog->employee ? $attendanceLog->employee->attendanceLogs()->where('status', 'absent')->count() : 0,
                         ];
                         $attendance_rate = $employeeStats['total_days'] > 0 ? round(($employeeStats['present_days'] / $employeeStats['total_days']) * 100, 1) : 0;
                     @endphp

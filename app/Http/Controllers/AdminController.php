@@ -113,7 +113,8 @@ class AdminController extends Controller
 
     public function destroyEmployee(User $employee)
     {
-        $employee->delete();
+        // Force delete to trigger cascade deletion of related records
+        $employee->forceDelete();
         return redirect()->route('admin.employees.index')->with('success', 'Employee deleted successfully.');
     }
 

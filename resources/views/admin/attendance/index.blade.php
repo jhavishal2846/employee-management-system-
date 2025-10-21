@@ -363,11 +363,27 @@
                         <td>
                             <div class="employee-info">
                                 <div class="employee-avatar">
-                                    {{ strtoupper(substr($log->employee->name, 0, 1)) }}
+                                    @if($log->employee)
+                                        {{ strtoupper(substr($log->employee->name, 0, 1)) }}
+                                    @else
+                                        ?
+                                    @endif
                                 </div>
                                 <div class="employee-details">
-                                    <span class="employee-name">{{ $log->employee->name }}</span>
-                                    <span class="employee-id">{{ $log->employee->email }}</span>
+                                    <span class="employee-name">
+                                        @if($log->employee)
+                                            {{ $log->employee->name }}
+                                        @else
+                                            Unknown Employee
+                                        @endif
+                                    </span>
+                                    <span class="employee-id">
+                                        @if($log->employee)
+                                            {{ $log->employee->email }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
                         </td>
@@ -427,7 +443,7 @@
                                 <a href="{{ route('admin.attendance.edit', $log) }}" class="btn-action btn-action-edit" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button type="button" class="btn-action btn-action-delete" onclick="deleteAttendance({{ $log->id }}, '{{ $log->employee->name }} - {{ $log->attendance_date->format('M d, Y') }}')" title="Delete">
+                                <button type="button" class="btn-action btn-action-delete" onclick="deleteAttendance({{ $log->id }}, '{{ $log->employee ? $log->employee->name : 'Unknown Employee' }} - {{ $log->attendance_date->format('M d, Y') }}')" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>

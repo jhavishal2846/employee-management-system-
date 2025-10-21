@@ -76,4 +76,14 @@ class AttendanceLog extends Model
     {
         return $this->hasOne(BreakLog::class)->whereNull('break_end');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($attendanceLog) {
+            // Delete related break logs when attendance log is deleted
+            $attendanceLog->breakLogs()->delete();
+        });
+    }
 }

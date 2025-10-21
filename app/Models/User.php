@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -50,19 +51,61 @@ class User extends Authenticatable
         'hourly_rate' => 'decimal:2',
     ];
 
-    public function employeeShifts()
+    public function employeeShifts(): HasMany
     {
         return $this->hasMany(EmployeeShift::class, 'employee_id');
     }
 
-    public function attendanceLogs()
+    public function attendanceLogs(): HasMany
     {
         return $this->hasMany(AttendanceLog::class, 'employee_id');
     }
 
-    public function approvedAttendances()
+    public function approvedAttendances(): HasMany
     {
         return $this->hasMany(AttendanceLog::class, 'approved_by');
+    }
+
+    public function shiftRequests(): HasMany
+    {
+        return $this->hasMany(ShiftRequest::class, 'employee_id');
+    }
+
+    public function approvedShiftRequests(): HasMany
+    {
+        return $this->hasMany(ShiftRequest::class, 'approved_by');
+    }
+
+    public function payrollReports(): HasMany
+    {
+        return $this->hasMany(PayrollReport::class, 'employee_id');
+    }
+
+    public function generatedPayrollReports(): HasMany
+    {
+        return $this->hasMany(PayrollReport::class, 'generated_by');
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'user_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($user) {
+            // Delete related records when user is permanently deleted
+            $user->employeeShifts()->delete();
+            $user->attendanceLogs()->delete();
+            $user->approvedAttendances()->delete();
+            $user->shiftRequests()->delete();
+            $user->approvedShiftRequests()->delete();
+            $user->payrollReports()->delete();
+            $user->generatedPayrollReports()->delete();
+            $user->auditLogs()->delete();
+        });
     }
 
     public function isAdmin()
