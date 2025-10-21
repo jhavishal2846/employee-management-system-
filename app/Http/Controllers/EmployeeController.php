@@ -180,8 +180,14 @@ class EmployeeController extends Controller
         // Validate shift timing - can only clock in during shift hours
         $shift = $todayShift->shift;
         if ($shift) {
-            $shiftStart = Carbon::createFromTimeString($shift->start_time->format('H:i:s'))->setDate($today->year, $today->month, $today->day);
-            $shiftEnd = Carbon::createFromTimeString($shift->end_time->format('H:i:s'))->setDate($today->year, $today->month, $today->day);
+            // Create shift times in IST (will use app timezone)
+            $shiftStart = Carbon::parse($today->format('Y-m-d') . ' ' . $shift->start_time->format('H:i:s'));
+            $shiftEnd = Carbon::parse($today->format('Y-m-d') . ' ' . $shift->end_time->format('H:i:s'));
+
+            // Handle shifts that cross midnight (e.g., 16:00 - 00:00)
+            if ($shiftEnd->lt($shiftStart)) {
+                $shiftEnd->addDay();
+            }
 
             if ($now->lt($shiftStart)) {
                 return response()->json(['error' => 'Cannot clock in before shift start time'], 400);
