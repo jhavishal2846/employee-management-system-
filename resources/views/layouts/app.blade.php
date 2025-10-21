@@ -454,6 +454,18 @@
                             </li>
                         </ul>
                     </div> --}}
+
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Account</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span>
+                                    <span class="menu-text">Logout</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 @else
                     <!-- Employee Menu -->
                     <div class="menu-group">
@@ -493,6 +505,18 @@
                                 <a class="menu-link {{ request()->routeIs('employee.profile*') ? 'active' : '' }}" href="{{ route('employee.profile.edit') }}">
                                     <span class="menu-icon"><i class="fas fa-user"></i></span>
                                     <span class="menu-text">Profile</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-group">
+                        <h2 class="menu-group-title">Account</h2>
+                        <ul class="menu-items">
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span>
+                                    <span class="menu-text">Logout</span>
                                 </a>
                             </li>
                         </ul>
