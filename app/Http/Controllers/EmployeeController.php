@@ -155,6 +155,7 @@ class EmployeeController extends Controller
     {
         $user = Auth::user();
         $today = today();
+        $now = now();
 
         // Check if already clocked in today
         $existingAttendance = AttendanceLog::where('employee_id', $user->id)
@@ -176,10 +177,25 @@ class EmployeeController extends Controller
             return response()->json(['error' => 'No accepted shift found for today'], 400);
         }
 
+        // Validate shift timing - can only clock in during shift hours
+        $shift = $todayShift->shift;
+        if ($shift) {
+            $shiftStart = Carbon::createFromTimeString($shift->start_time->format('H:i:s'))->setDate($today->year, $today->month, $today->day);
+            $shiftEnd = Carbon::createFromTimeString($shift->end_time->format('H:i:s'))->setDate($today->year, $today->month, $today->day);
+
+            if ($now->lt($shiftStart)) {
+                return response()->json(['error' => 'Cannot clock in before shift start time'], 400);
+            }
+
+            if ($now->gt($shiftEnd)) {
+                return response()->json(['error' => 'Cannot clock in after shift end time'], 400);
+            }
+        }
+
         $attendanceData = [
             'employee_id' => $user->id,
             'attendance_date' => $today,
-            'login_time' => now(),
+            'login_time' => $now,
             'status' => 'present',
             'ip_address' => $request->ip(),
             'shift_id' => $todayShift->shift_id,
@@ -196,63 +212,72 @@ class EmployeeController extends Controller
 
     public function clockOut(Request $request)
     {
-        $user = Auth::user();
-        $today = today();
+        try {
+            $user = Auth::user();
+            $today = today();
 
-        $attendance = AttendanceLog::where('employee_id', $user->id)
-            ->where('attendance_date', $today)
-            ->whereNotNull('login_time')
-            ->whereNull('logout_time')
-            ->first();
+            $attendance = AttendanceLog::where('employee_id', $user->id)
+                ->where('attendance_date', $today)
+                ->whereNotNull('login_time')
+                ->whereNull('logout_time')
+                ->first();
 
-        if (!$attendance) {
-            return response()->json(['error' => 'No active clock-in found'], 400);
+            if (!$attendance) {
+                return response()->json(['error' => 'No active clock-in found'], 400);
+            }
+
+            $logoutTime = now();
+            $loginTime = Carbon::parse($attendance->login_time);
+
+            // Calculate total hours
+            $totalMinutes = $logoutTime->diffInMinutes($loginTime);
+            $totalHours = round($totalMinutes / 60, 2);
+
+            // Calculate break duration
+            $breakDuration = $attendance->breakLogs()->sum('duration_minutes');
+
+            // Subtract break time from total hours
+            $netMinutes = $totalMinutes - $breakDuration;
+            $netHours = round($netMinutes / 60, 2);
+
+            // Get shift details for overtime calculation
+            $shift = $attendance->shift;
+            $standardHours = 8; // Default 8 hours
+
+            if ($shift) {
+                // Calculate shift duration
+                $shiftStart = Carbon::createFromTimeString($shift->start_time->format('H:i:s'));
+                $shiftEnd = Carbon::createFromTimeString($shift->end_time->format('H:i:s'));
+                $shiftMinutes = $shiftEnd->diffInMinutes($shiftStart);
+                $standardHours = round($shiftMinutes / 60, 2);
+            }
+
+            // Calculate overtime
+            $overtimeHours = max(0, $netHours - $standardHours);
+
+            $attendance->update([
+                'logout_time' => $logoutTime,
+                'total_hours_minutes' => $netMinutes,
+                'total_hours' => $netHours,
+                'break_duration_minutes' => $breakDuration,
+                'is_overtime' => $overtimeHours > 0,
+                'overtime_hours' => $overtimeHours,
+                'status' => $netHours >= ($standardHours * 0.5) ? 'present' : 'early_leave', // Must work at least 50% of shift
+            ]);
+
+            return response()->json([
+                'success' => 'Clocked out successfully',
+                'total_hours' => $netHours,
+                'overtime_hours' => $overtimeHours,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Clock out error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'An error occurred while clocking out. Please try again.'], 500);
         }
-
-        $logoutTime = now();
-        $loginTime = Carbon::parse($attendance->login_time);
-
-        // Calculate total hours
-        $totalMinutes = $logoutTime->diffInMinutes($loginTime);
-        $totalHours = round($totalMinutes / 60, 2);
-
-        // Calculate break duration
-        $breakDuration = $attendance->breakLogs()->sum('duration_minutes');
-
-        // Subtract break time from total hours
-        $netMinutes = $totalMinutes - $breakDuration;
-        $netHours = round($netMinutes / 60, 2);
-
-        // Get shift details for overtime calculation
-        $shift = $attendance->shift;
-        $standardHours = 8; // Default 8 hours
-
-        if ($shift) {
-            // Calculate shift duration
-            $shiftStart = Carbon::createFromFormat('H:i', $shift->start_time);
-            $shiftEnd = Carbon::createFromFormat('H:i', $shift->end_time);
-            $shiftMinutes = $shiftEnd->diffInMinutes($shiftStart);
-            $standardHours = round($shiftMinutes / 60, 2);
-        }
-
-        // Calculate overtime
-        $overtimeHours = max(0, $netHours - $standardHours);
-
-        $attendance->update([
-            'logout_time' => $logoutTime,
-            'total_hours_minutes' => $netMinutes,
-            'total_hours' => $netHours,
-            'break_duration_minutes' => $breakDuration,
-            'is_overtime' => $overtimeHours > 0,
-            'overtime_hours' => $overtimeHours,
-            'status' => $netHours >= ($standardHours * 0.5) ? 'present' : 'early_leave', // Must work at least 50% of shift
-        ]);
-
-        return response()->json([
-            'success' => 'Clocked out successfully',
-            'total_hours' => $netHours,
-            'overtime_hours' => $overtimeHours,
-        ]);
     }
 
     public function startBreak(Request $request)
@@ -353,6 +378,7 @@ class EmployeeController extends Controller
                 $response = [
                     'status' => 'on_break',
                     'login_time' => $attendance->login_time->format('H:i'),
+                    'break_start_time' => $attendance->activeBreak->break_start->format('H:i'),
                     'break_start_timestamp' => $attendance->activeBreak->break_start->timestamp * 1000,
                 ];
             } else {

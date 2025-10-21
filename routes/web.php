@@ -23,7 +23,6 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 // Admin Routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -58,6 +57,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/reports', [AdminController::class, 'reports'])->name('admin.reports.index');
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings.index');
+    Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
+    Route::post('/admin/backup-database', [AdminController::class, 'backupDatabase'])->name('admin.backup.database');
+    Route::post('/admin/export-data', [AdminController::class, 'exportData'])->name('admin.export.data');
+    Route::post('/admin/clear-logs', [AdminController::class, 'clearLogs'])->name('admin.clear.logs');
 });
 
 // Employee Routes

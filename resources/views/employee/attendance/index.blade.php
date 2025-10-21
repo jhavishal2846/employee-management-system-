@@ -865,26 +865,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleEndBreak() {
-        fetch('/employee/attendance/end-break', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                stopBreakTimer();
-                loadAttendanceStatus();
-                showSuccessPopup(`Break ended successfully! Duration: ${data.break_duration} minutes`);
-            } else {
-                showErrorPopup(data.error || 'Failed to end break');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showErrorPopup('An error occurred while ending break');
+        showConfirmationPopup('Are you sure you want to end your break?', function() {
+            fetch('/employee/attendance/end-break', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    stopBreakTimer();
+                    loadAttendanceStatus();
+                    showSuccessPopup(`Break ended successfully! Duration: ${data.break_duration} minutes`);
+                } else {
+                    showErrorPopup(data.error || 'Failed to end break');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorPopup('An error occurred while ending break');
+            });
         });
     }
 });

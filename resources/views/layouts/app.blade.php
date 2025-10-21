@@ -375,7 +375,7 @@
                 <button class="sidebar-toggle d-lg-none" type="button" id="mobileSidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <a class="navbar-brand ms-2" href="{{ url('/') }}">
+                 <a class="navbar-brand ms-2" href="{{ Auth::check() ? (Auth::user()->isAdmin() ? route('admin.dashboard') : route('employee.dashboard')) : url('/') }}">
                     Employee Shift Management
                 </a>
                 <div class="ms-auto">
@@ -446,12 +446,12 @@
                                     <span class="menu-text">Reports</span>
                                 </a>
                             </li>
-                            <li class="menu-item">
+                            {{-- <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
                                     <span class="menu-icon"><i class="fas fa-cog"></i></span>
                                     <span class="menu-text">Settings</span>
                                 </a>
-                            </li>
+                            </li> --}}
                         </ul>
                     </div>
                 @else

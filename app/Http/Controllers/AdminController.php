@@ -9,6 +9,7 @@ use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminController extends Controller
 {
@@ -319,6 +320,137 @@ class AdminController extends Controller
 
     public function settings()
     {
-        return view('admin.settings.index');
+        // Get current settings from config or database
+        $settings = [
+            'company_name' => config('app.name', 'Employee Shift Management'),
+            'default_working_hours' => config('app.default_working_hours', 8),
+            'timezone' => config('app.timezone', 'UTC'),
+        ];
+
+        return view('admin.settings.index', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'company_name' => 'required|string|max:255',
+            'default_working_hours' => 'required|integer|min:1|max:24',
+            'timezone' => 'required|string|timezone',
+        ]);
+
+        // Update .env file for persistence
+        $this->updateEnvironmentFile([
+            'APP_NAME' => $request->company_name,
+            'APP_DEFAULT_WORKING_HOURS' => $request->default_working_hours,
+            'APP_TIMEZONE' => $request->timezone,
+        ]);
+
+        // Update config values for immediate effect
+        config(['app.name' => $request->company_name]);
+        config(['app.default_working_hours' => $request->default_working_hours]);
+        config(['app.timezone' => $request->timezone]);
+
+        return redirect()->back()->with('success', 'Settings updated successfully. Please run "php artisan config:cache" in your terminal to apply changes globally.');
+    }
+
+    public function backupDatabase()
+    {
+        try {
+            $filename = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
+            $path = storage_path('backups/' . $filename);
+
+            // Ensure backup directory exists
+            if (!file_exists(storage_path('backups'))) {
+                mkdir(storage_path('backups'), 0755, true);
+            }
+
+            // Use mysqldump command (adjust for your database)
+            $command = sprintf(
+                'mysqldump -u%s -p%s %s > %s',
+                config('database.connections.mysql.username'),
+                config('database.connections.mysql.password'),
+                config('database.connections.mysql.database'),
+                $path
+            );
+
+            exec($command, $output, $returnVar);
+
+            if ($returnVar === 0) {
+                return response()->download($path)->deleteFileAfterSend();
+            } else {
+                return redirect()->back()->with('error', 'Database backup failed.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Database backup failed: ' . $e->getMessage());
+        }
+    }
+
+    public function exportData()
+    {
+        try {
+            $data = [
+                'employees' => User::employees()->get(),
+                'shifts' => Shift::all(),
+                'attendance_logs' => AttendanceLog::all(),
+                'employee_shifts' => EmployeeShift::all(),
+            ];
+
+            $filename = 'export_' . date('Y-m-d_H-i-s') . '.json';
+            $path = storage_path('exports/' . $filename);
+
+            // Ensure export directory exists
+            if (!file_exists(storage_path('exports'))) {
+                mkdir(storage_path('exports'), 0755, true);
+            }
+
+            file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
+
+            return response()->download($path)->deleteFileAfterSend();
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Data export failed: ' . $e->getMessage());
+        }
+    }
+
+    public function clearLogs()
+    {
+        try {
+            // Clear Laravel logs
+            $logPath = storage_path('logs/laravel.log');
+            if (file_exists($logPath)) {
+                file_put_contents($logPath, '');
+            }
+
+            // Clear audit logs from database
+            DB::table('audit_logs')->delete();
+
+            return redirect()->back()->with('success', 'Logs cleared successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to clear logs: ' . $e->getMessage());
+        }
+    }
+
+    private function updateEnvironmentFile(array $data)
+    {
+        $envFile = base_path('.env');
+        $envContent = file_get_contents($envFile);
+
+        foreach ($data as $key => $value) {
+            // Escape special characters in value
+            $escapedValue = $this->escapeEnvValue($value);
+            $pattern = "/^{$key}=.*$/m";
+            $replacement = "{$key}={$escapedValue}";
+            $envContent = preg_replace($pattern, $replacement, $envContent);
+        }
+
+        file_put_contents($envFile, $envContent);
+    }
+
+    private function escapeEnvValue($value)
+    {
+        // If value contains spaces or special characters, wrap in quotes
+        if (preg_match('/\s/', $value) || strpos($value, '"') !== false) {
+            return '"' . addslashes($value) . '"';
+        }
+        return $value;
     }
 }
